@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-14 23:52:12
+ * @LastEditTime: 2022-01-15 10:22:01
  * @Descripttion: 
 -->
 <template>
@@ -15,6 +15,8 @@
     <!-- 背景下半部分 -->
     <div class='bg-bottom'>
     </div>
+    <!-- 下雪 -->
+    <div class="snow-wrap" ref="snowWrap"></div>
   </div>
 </template>
 
@@ -31,6 +33,7 @@ export default {
   mounted () {
     console.log(this.$refs.bgTop.$el);
     this.createCity()
+    this.snowStart()
   },
   methods: {
     /**
@@ -50,18 +53,16 @@ export default {
       // 弹幕移动
       let cityMove = () => {
         city.style.left = city.offsetLeft - this.citySpeed + 'px'
-        // eslint-disable-next-line no-debugger
-        // debugger
-
+        // 判断是否加载下一个背景
         if (!city.createNext) {
-          // 如果弹幕距离屏幕右侧为0，则加载下一条弹幕
+          // 如果本条城市背景距离屏幕右侧为0，则加载下一个背景
           if (city.offsetLeft < (this.screenWidth - city.offsetWidth)) {
             this.createCity(index)
             city.createNext = true
           }
         }
 
-        // 如果弹幕距离右侧距离大于等于屏幕宽度，则移除弹幕
+        // 如果城市背景距离右侧距离大于等于屏幕宽度，则移除此城市背景
         if (city.offsetLeft < (-city.offsetWidth)) {
           this.$refs.bgTop.removeChild(city)
         } else {
@@ -69,6 +70,19 @@ export default {
         }
       }
       cityMove()
+    },
+    /**
+     * @description: 下雪
+     * @param {*}
+     * @return {*}
+     */
+    snowStart () {
+      // 创建雪花
+      let snowItem = document.createElement('div')
+      snowItem.className = 'snow-item'
+      
+
+      this.$refs.snowWrap.appendChild(snowItem)
     }
   },
 }
@@ -97,5 +111,23 @@ export default {
 .bg-bottom {
   height: 20%;
   background-image: linear-gradient(to bottom, #545a5c, #303338);
+}
+/* 雪花样式 */
+.snow-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.snow-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, .7);
+  border-radius: 50%;
+  box-shadow: 0 0 5px 2px rgba(255, 255, 255, 1);
 }
 </style>
