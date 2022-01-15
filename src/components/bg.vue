@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-15 10:22:01
+ * @LastEditTime: 2022-01-15 11:21:52
  * @Descripttion: 
 -->
 <template>
@@ -28,6 +28,7 @@ export default {
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
       citySpeed: 1, // 背景移动速度
+      snowSpeed: 1 // 雪花下落的速度
     }
   },
   mounted () {
@@ -50,7 +51,7 @@ export default {
       city.createNext = false // 是否已创建下一个背景
       this.$refs.bgTop.appendChild(city)
 
-      // 弹幕移动
+      // 城市移动移动
       let cityMove = () => {
         city.style.left = city.offsetLeft - this.citySpeed + 'px'
         // 判断是否加载下一个背景
@@ -80,9 +81,32 @@ export default {
       // 创建雪花
       let snowItem = document.createElement('div')
       snowItem.className = 'snow-item'
-      
+      snowItem.style.top = -snowItem.offsetWidth + 'px'
 
       this.$refs.snowWrap.appendChild(snowItem)
+
+      // 雪花移动
+      let snowMove = () => {
+        // snowItem.style.left = snowItem.offsetLeft - this.snowItemSpeed + 'px'
+        snowItem.style.top = snowItem.offsetTop + this.snowSpeed + 'px'
+        // 判断是否加载下一个背景
+        // if (!snowItem.createNext) {
+        //   // 如果本条城市背景距离屏幕右侧为0，则加载下一个背景
+        //   if (snowItem.offsetLeft < (this.screenWidth - snowItem.offsetWidth)) {
+        //     this.createsnowItem(index)
+        //     snowItem.createNext = true
+        //   }
+        // }
+
+        // 如果城市背景距离右侧距离大于等于屏幕宽度，则移除此城市背景
+        if (snowItem.offsetTop > this.screenHeight) {
+          this.$refs.bgTop.removeChild(snowItem)
+        } else {
+          requestAnimationFrame(snowMove)
+        }
+      }
+
+      snowMove()
     }
   },
 }
