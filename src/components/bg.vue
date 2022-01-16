@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-15 18:46:02
+ * @LastEditTime: 2022-01-15 23:03:00
  * @Descripttion: 
 -->
 <template>
@@ -114,6 +114,13 @@ export default {
           let moveX = Math.tan(this.snowAngle * Math.PI / 180) * moveY
           snowItem.style.left = snowItem.offsetLeft - moveX + 'px'
 
+          // 如果雪花偏移角度大于0，则判断雪花是否超出左侧屏幕
+          if (this.snowAngle > 0) {
+            if (snowItem.offsetLeft < (-snowItem.offsetWidth)) {
+              this.$refs.snowWrap.removeChild(snowItem)
+              return
+            }
+          }
 
           // 如果雪花距离屏幕顶部距离大于等于屏幕高度，则移除此雪花
           if (snowItem.offsetTop > this.screenHeight) {
