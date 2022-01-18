@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-18 17:20:03
+ * @LastEditTime: 2022-01-18 18:47:37
  * @Descripttion: 
 -->
 <template>
@@ -21,6 +21,9 @@ export default {
   name: '',
   data() {
     return {
+      screenWidth: document.documentElement.clientWidth, // 屏幕宽度
+      screenHeight: document.documentElement.clientHeight, // 屏幕高度
+
       // 汤圆部分
       tangyuanG: 0.02, // 设定的重力加速度
       tangyuanUpStartTime: 0, // 汤圆开始上抛的时间
@@ -30,12 +33,17 @@ export default {
       tangyuanDownInterval: null, // 汤圆下坠的定时器
 
       // 柱子部分
+      createPillarInterval: null, // 创建柱子的定时器
       pillarWidth: 50, // 柱子的宽度
+      pillarGap: 200, // 柱子的间距
+      pillarMoveInterVal: null, // 柱子移动的定时器
+      pillarSpeed: 2, // 柱子移动的速度
     }
   },
   mounted () {
     // this.tangyuanStartDown()
     this.createPillar()
+    this.movePillar()
   },
   methods: {
     /**
@@ -101,14 +109,47 @@ export default {
      * @param {*}
      * @return {*}
      */
-    createPillar() {
+    createPillar () {
+      // 需要先根据屏幕高度算出柱子的空隙区间范围
+      // 此处暂时设定为一格的可用范围为屏幕高度的十分之一
+      let screenSpan = this.screenHeight / 10
+      // 设定间隙区间范围为屏幕中间的四格，那么间隙顶部的坐标范围就是屏幕的十分之三到（十分之七-间隙高度）之间
+      let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGap))  + screenSpan * 3
+      let gapBottom = gapTop + this.pillarGap
+
+      // 根据间隙区间范围生成柱子
+      this.createPillarDom(0, this.screenHeight-gapTop)
+      this.createPillarDom(gapBottom, 0)
+    },
+    /**
+     * @description: 柱子生成器
+     * @param {*}
+     * @return {*}
+     */    
+    createPillarDom (top, bottom) {
       let pillar = document.createElement('div')
       pillar.className = 'pillar-item'
-      pillar.style.top = '0px'
-      pillar.style.bottom = '200px'
+      pillar.style.left = this.screenWidth + 'px'
+      pillar.style.top = top + 'px'
+      pillar.style.bottom = bottom + 'px'
       pillar.style.width = this.pillarWidth + 'px'
       this.$refs.pillarWrap.appendChild(pillar)
     },
+    /**
+     * @description: 整体柱子移动
+     * @param {*}
+     * @return {*}
+     */
+    movePillar() {
+      // 获取所有柱子
+      let pillarDoms = this.$refs.pillarWrap.children
+      let pillarList = Array.from(pillarDoms)
+      for (let index = 0; index < pillarList.length; index++) {
+        let item = pillarList[index]
+        item.style.left = item.offsetLeft - this.pillarSpeed + 'px'
+      }
+      this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
+    }
     
   },
 }
