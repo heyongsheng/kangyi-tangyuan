@@ -3,15 +3,15 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-18 00:04:01
+ * @LastEditTime: 2022-01-18 17:20:03
  * @Descripttion: 
 -->
 <template>
   <div class='game-wrap' @click="tangyuanUpEmit" @keyup.space="tangyuanUpEmit" autofocus tabindex="0">
+    <!-- 柱子 -->
+    <div class="pillar-wrap" ref="pillarWrap"></div>
     <!-- 汤圆 -->
     <div class="tangyuan" ref="tangyuan"></div>
-    <!-- 柱子 -->
-
   </div>
 </template>
 
@@ -30,11 +30,12 @@ export default {
       tangyuanDownInterval: null, // 汤圆下坠的定时器
 
       // 柱子部分
-      
+      pillarWidth: 50, // 柱子的宽度
     }
   },
   mounted () {
     // this.tangyuanStartDown()
+    this.createPillar()
   },
   methods: {
     /**
@@ -94,12 +95,25 @@ export default {
       console.log(now -  this.tangyuanStartTime);
       this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y  + 'px';
       this.tangyuanDownInterval = requestAnimationFrame(this.tangyuanDown)
-    }
+    },
+    /**
+     * @description: 开始生成柱子
+     * @param {*}
+     * @return {*}
+     */
+    createPillar() {
+      let pillar = document.createElement('div')
+      pillar.className = 'pillar-item'
+      pillar.style.top = '0px'
+      pillar.style.bottom = '200px'
+      pillar.style.width = this.pillarWidth + 'px'
+      this.$refs.pillarWrap.appendChild(pillar)
+    },
     
   },
 }
 </script>
-<style scoped>
+<style>
 .game-wrap {
   position: fixed;
   top: 0;
@@ -107,6 +121,7 @@ export default {
   bottom: 0;
   left: 0;
 }
+/* 汤圆 */
 .tangyuan {
   width: 100px;
   height: 100px;
@@ -116,5 +131,17 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+/* 柱子 */
+.pillar-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.pillar-item {
+  position: absolute;
+  background: rgb(38, 42, 54);
 }
 </style>
