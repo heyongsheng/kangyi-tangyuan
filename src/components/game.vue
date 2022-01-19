@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-18 18:47:37
+ * @LastEditTime: 2022-01-19 18:28:22
  * @Descripttion: 
 -->
 <template>
@@ -34,7 +34,9 @@ export default {
 
       // 柱子部分
       createPillarInterval: null, // 创建柱子的定时器
-      pillarWidth: 50, // 柱子的宽度
+      createPillarLastTime: '', // 上一次创建柱子的时间
+      pillarFrequency: 4000, // 柱子生成的频率 毫秒/次
+      pillarWidth: 100, // 柱子的宽度
       pillarGap: 200, // 柱子的间距
       pillarMoveInterVal: null, // 柱子移动的定时器
       pillarSpeed: 2, // 柱子移动的速度
@@ -110,25 +112,31 @@ export default {
      * @return {*}
      */
     createPillar () {
-      // 需要先根据屏幕高度算出柱子的空隙区间范围
-      // 此处暂时设定为一格的可用范围为屏幕高度的十分之一
-      let screenSpan = this.screenHeight / 10
-      // 设定间隙区间范围为屏幕中间的四格，那么间隙顶部的坐标范围就是屏幕的十分之三到（十分之七-间隙高度）之间
-      let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGap))  + screenSpan * 3
-      let gapBottom = gapTop + this.pillarGap
+      // 根据上跟柱子的生成时间和设定的生成频率生成柱子
+      let now = new Date().getTime()
+      if (now - this.createPillarLastTime > this.pillarFrequency) {
+        // 需要先根据屏幕高度算出柱子的空隙区间范围
+        // 此处暂时设定为一格的可用范围为屏幕高度的十分之一
+        let screenSpan = this.screenHeight / 10
+        // 设定间隙区间范围为屏幕中间的四格，那么间隙顶部的坐标范围就是屏幕的十分之三到（十分之七-间隙高度）之间
+        let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGap))  + screenSpan * 3
+        let gapBottom = gapTop + this.pillarGap
 
-      // 根据间隙区间范围生成柱子
-      this.createPillarDom(0, this.screenHeight-gapTop)
-      this.createPillarDom(gapBottom, 0)
+        // 根据间隙区间范围生成柱子
+        this.createPillarDom(0, this.screenHeight-gapTop, 'pillar-item-top')
+        this.createPillarDom(gapBottom, 0, 'pillar-item-bottom')
+        this.createPillarLastTime = now
+      }
+      this.createPillarInterval = requestAnimationFrame(this.createPillar)
     },
     /**
      * @description: 柱子生成器
      * @param {*}
      * @return {*}
      */    
-    createPillarDom (top, bottom) {
+    createPillarDom (top, bottom, className) {
       let pillar = document.createElement('div')
-      pillar.className = 'pillar-item'
+      pillar.className = className
       pillar.style.left = this.screenWidth + 'px'
       pillar.style.top = top + 'px'
       pillar.style.bottom = bottom + 'px'
@@ -146,7 +154,11 @@ export default {
       let pillarList = Array.from(pillarDoms)
       for (let index = 0; index < pillarList.length; index++) {
         let item = pillarList[index]
-        item.style.left = item.offsetLeft - this.pillarSpeed + 'px'
+        if (item.offsetLeft < -this.pillarWidth) {
+          this.$refs.pillarWrap.removeChild(item)
+        } else {
+          item.style.left = item.offsetLeft - this.pillarSpeed + 'px'
+        }
       }
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
     }
@@ -181,8 +193,12 @@ export default {
   bottom: 0;
   left: 0;
 }
-.pillar-item {
+.pillar-item-top {
   position: absolute;
-  background: rgb(38, 42, 54);
+  background-image: linear-gradient(to bottom, #545a5c, #303338);
+}
+.pillar-item-bottom {
+  position: absolute;
+  background-image: linear-gradient(to top, #545a5c, #303338);
 }
 </style>
