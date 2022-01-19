@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-19 18:28:22
+ * @LastEditTime: 2022-01-19 23:45:06
  * @Descripttion: 
 -->
 <template>
@@ -160,6 +160,15 @@ export default {
           item.style.left = item.offsetLeft - this.pillarSpeed + 'px'
         }
       }
+      // 获取当前与汤圆最近右侧的柱子
+      let left = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
+      let nextDomIndex = pillarList.findIndex(item => {
+        return item.offsetLeft > left
+      })
+      pillarList[nextDomIndex].className = 'pillar-item-active'
+      pillarList[nextDomIndex + 1].className = 'pillar-item-active'
+      console.log(this.$refs.tangyuan.offsetLeft);
+
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
     }
     
@@ -200,5 +209,9 @@ export default {
 .pillar-item-bottom {
   position: absolute;
   background-image: linear-gradient(to top, #545a5c, #303338);
+}
+.pillar-item-active {
+  position: absolute;
+  background-image: linear-gradient(to top, #ffd06c, #ffedc7);
 }
 </style>
