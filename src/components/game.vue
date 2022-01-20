@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-19 23:45:06
+ * @LastEditTime: 2022-01-20 23:49:55
  * @Descripttion: 
 -->
 <template>
@@ -37,7 +37,7 @@ export default {
       createPillarLastTime: '', // 上一次创建柱子的时间
       pillarFrequency: 4000, // 柱子生成的频率 毫秒/次
       pillarWidth: 100, // 柱子的宽度
-      pillarGap: 200, // 柱子的间距
+      pillarGapHeight: 200, // 柱子的间距
       pillarMoveInterVal: null, // 柱子移动的定时器
       pillarSpeed: 2, // 柱子移动的速度
     }
@@ -119,8 +119,8 @@ export default {
         // 此处暂时设定为一格的可用范围为屏幕高度的十分之一
         let screenSpan = this.screenHeight / 10
         // 设定间隙区间范围为屏幕中间的四格，那么间隙顶部的坐标范围就是屏幕的十分之三到（十分之七-间隙高度）之间
-        let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGap))  + screenSpan * 3
-        let gapBottom = gapTop + this.pillarGap
+        let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGapHeight))  + screenSpan * 3
+        let gapBottom = gapTop + this.pillarGapHeight
 
         // 根据间隙区间范围生成柱子
         this.createPillarDom(0, this.screenHeight-gapTop, 'pillar-item-top')
@@ -165,11 +165,78 @@ export default {
       let nextDomIndex = pillarList.findIndex(item => {
         return item.offsetLeft > left
       })
-      pillarList[nextDomIndex].className = 'pillar-item-active'
-      pillarList[nextDomIndex + 1].className = 'pillar-item-active'
-      console.log(this.$refs.tangyuan.offsetLeft);
+      let pillarTop = pillarList[nextDomIndex]
+      let pillarBottom = pillarList[nextDomIndex+1]
+      pillarTop.className = 'pillar-item-active'
+      pillarBottom.className = 'pillar-item-active'
+      // 获取汤圆的半径及圆心坐标
+      let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
+      let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
+      let tangyuanCenterY = this.$refs.tangyuan.offsetTop
+      // 检测汤圆与上方柱子是否碰撞
+      // 获取上方柱子中心的坐标
+      let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
+      let pillarTopCenterY = pillarTop.offsetHeight / 2
+      console.log(tangyuanCenterX);
+      console.log(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarTopCenterX, tangyuanCenterY-pillarTopCenterY);
+      if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarTopCenterX, tangyuanCenterY-pillarTopCenterY)) {
+        this.gameOver()
+        return
+      }
+      // 检测汤圆与下方柱子是否碰撞
+      // 获取下方柱子中心的坐标
+      let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
+      let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
+
+      if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarBottomCenterX, tangyuanCenterY-pillarBottomCenterY)) {
+        this.gameOver()
+        return
+      }
+
+      
+      // // 根绝上下柱子获取柱子间隙四个点的坐标
+      // let gapTop = pillarTop.offsetHeight
+      // let gapBottom = pillarBottom.offsetTop
+      // let gapLeft = pillarTop.offsetLeft
+      // let gapRight = pillarTop.offsetLeft + pillarTop.offsetWidth
+      // console.log(gapTop, gapBottom, gapLeft, gapRight);
+
+      // // 根据汤圆的位置判断是否碰撞
+      // if (this.$refs.tangyuan.offsetTop > gapTop && this.$refs.tangyuan.offsetTop < gapBottom) {
+      //   if (this.$refs.tangyuan.offsetLeft > gapLeft && this.$refs.tangyuan.offsetLeft < gapRight) {
+      //     alert('游戏结束')
+      //   }
+      // }
 
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
+    },
+    /**
+     * @description: 圆形与矩形的碰撞检测
+     * @param {*} w 矩形的宽
+     * @param {*} h 矩形的高
+     * @param {*} r 圆形的半径
+     * @param {*} rx 圆心与矩形中心的x距离
+     * @param {*} ry 圆心与矩形中心的y距离
+     * @return {*}
+     */    
+    computeCollision (w, h, r, rx, ry) {
+      var dx = Math.min(rx, w * 0.5);
+      var dx1 = Math.max(dx, -w * 0.5);
+      var dy = Math.min(ry, h * 0.5);
+      var dy1 = Math.max(dy, -h * 0.5);
+      return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
+    },
+    /**
+     * @description: 游戏结束
+     * @param {*}
+     * @return {*}
+     */
+    gameOver () {
+      cancelAnimationFrame(this.tangyuanUpInterval)
+      cancelAnimationFrame(this.tangyuanDownInterval)
+      cancelAnimationFrame(this.createPillarInterval)
+      cancelAnimationFrame(this.pillarMoveInterVal)
+      alert('游戏结束')
     }
     
   },
