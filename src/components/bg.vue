@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-15 23:03:00
+ * @LastEditTime: 2022-01-21 12:46:29
  * @Descripttion: 
 -->
 <template>
@@ -24,6 +24,7 @@
 export default {
   data () {
     return {
+      spaceData: require('../assets/data/space.json'),
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
       citySpeed: 1, // 背景移动速度
@@ -49,12 +50,19 @@ export default {
      * @return {*}
      */
     createCity (index) {
-      let city = document.createElement('img')
+      let city = document.createElement('div')
       // let bulletHeight = document.documentElement.clientHeight / 10
       city.className = 'bg-city'
       city.style.left = this.screenWidth + 'px'
-      city.src = require('../assets/img/bg.png')
       city.createNext = false // 是否已创建下一个背景
+      // 从地区库中随机选择一个地区
+      let dataLength = this.spaceData.length
+      let randomIndex = Math.floor(Math.random() * dataLength)
+      let space = this.spaceData[randomIndex]
+      let spaceDom = document.createElement('div')
+      spaceDom.className = 'space-name'
+      spaceDom.innerText = space
+      city.appendChild(spaceDom)
       this.$refs.bgTop.appendChild(city)
 
       // 城市移动移动
@@ -152,12 +160,17 @@ export default {
   background-image: linear-gradient(to bottom, #59666c, #5a5f62);
 }
 .bg-city {
+  background: url('../assets/img/bg.png');
   display: block;
   position: absolute;
   bottom: 0;
   width: 1209px;
   height: 93px;
   opacity: 0.1;
+}
+.space-name {
+  color: #fff;
+  margin-top: -30px;
 }
 .bg-bottom {
   height: 20%;
