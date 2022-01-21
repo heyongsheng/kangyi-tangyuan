@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-20 23:49:55
+ * @LastEditTime: 2022-01-21 13:28:17
  * @Descripttion: 
 -->
 <template>
@@ -136,7 +136,8 @@ export default {
      */    
     createPillarDom (top, bottom, className) {
       let pillar = document.createElement('div')
-      pillar.className = className
+      // pillar.className = className
+      pillar.className = ['pillar-item', className].join(' ')
       pillar.style.left = this.screenWidth + 'px'
       pillar.style.top = top + 'px'
       pillar.style.bottom = bottom + 'px'
@@ -167,8 +168,16 @@ export default {
       })
       let pillarTop = pillarList[nextDomIndex]
       let pillarBottom = pillarList[nextDomIndex+1]
-      pillarTop.className = 'pillar-item-active'
-      pillarBottom.className = 'pillar-item-active'
+
+      // 给柱子添加净化效果
+      if (!pillarTop.clear) {
+        console.log(444);
+      }
+      if (!pillarTop.clear) {
+        console.log(444);
+      }
+      pillarTop.classList.add('pillar-item-active')
+      pillarBottom.classList.add('pillar-item-active')
       // 获取汤圆的半径及圆心坐标
       let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
       let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
@@ -269,16 +278,18 @@ export default {
   bottom: 0;
   left: 0;
 }
-.pillar-item-top {
+.pillar-item {
   position: absolute;
-  background-image: linear-gradient(to bottom, #545a5c, #303338);
+  transition: background-color 1s;
+}
+.pillar-item-top {
+  background: rgb(48, 48, 48) linear-gradient(to top, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
 }
 .pillar-item-bottom {
-  position: absolute;
-  background-image: linear-gradient(to top, #545a5c, #303338);
+  background: rgb(48, 48, 48)  linear-gradient(to bottom, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
 }
 .pillar-item-active {
-  position: absolute;
-  background-image: linear-gradient(to top, #ffd06c, #ffedc7);
+  background-color: #ffd06c;
+  /* background-image: linear-gradient(to top, #ffd06c, #ffedc7); */
 }
 </style>
