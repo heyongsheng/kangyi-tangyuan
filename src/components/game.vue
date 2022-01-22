@@ -3,12 +3,26 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-22 13:04:30
+ * @LastEditTime: 2022-01-22 23:43:36
  * @Descripttion: 
 -->
 <template>
-  <div class='game-wrap' @click="tangyuanUpEmit" @keyup.space="tangyuanUpEmit" autofocus tabindex="0">
-    <span style="color:#fff">{{energy}}</span>
+  <div
+    class="game-wrap"
+    ref="gameWrap"
+    @click="tangyuanUpEmit"
+    @keyup.space="tangyuanUpEmit"
+    autofocus
+    tabindex="0"
+  >
+    <div class="energy-wrap" ref="energyWrap"></div>
+    <div
+      class="energy-fixed energy-item"
+      v-show="energy"
+      :style="{
+        transform: `translate(-50%, 50px) scale(${1 + (energy - 1) / 2})`,
+      }"
+    ></div>
     <!-- 柱子 -->
     <div class="pillar-wrap" ref="pillarWrap"></div>
     <!-- 汤圆 -->
@@ -20,7 +34,7 @@
 
 export default {
   name: '',
-  data() {
+  data () {
     return {
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
@@ -38,12 +52,12 @@ export default {
       createPillarLastTime: '', // 上一次创建柱子的时间
       pillarFrequency: 4000, // 柱子生成的频率 毫秒/次
       pillarWidth: 100, // 柱子的宽度
-      pillarGapHeight: 200, // 柱子的间距
+      pillarGapHeight: 220, // 柱子的间距
       pillarMoveInterVal: null, // 柱子移动的定时器
       pillarSpeed: 2, // 柱子移动的速度
 
       // 能量
-      energy: 100 // 当前能量
+      energy: 0 // 当前能量
     }
   },
   mounted () {
@@ -64,8 +78,8 @@ export default {
      * @description: 汤圆开始上抛
      * @param {*}
      * @return {*}
-     */    
-    tangyuanStartUp() {
+     */
+    tangyuanStartUp () {
       // 上抛时清除正在上抛或下坠的定时器
       cancelAnimationFrame(this.tangyuanDownInterval)
       cancelAnimationFrame(this.tangyuanUpInterval)
@@ -78,7 +92,7 @@ export default {
      * @param {*}
      * @return {*}
      */
-    tangyuanUping() {
+    tangyuanUping () {
       let now = Date.now()
       let t = now - this.tangyuanUpStartTime
       let v0 = this.tangyuanUpV
@@ -90,9 +104,9 @@ export default {
       } else {
         this.tangyuanUpInterval = requestAnimationFrame(this.tangyuanUping)
       }
-    }, 
+    },
     // 汤圆开始下落
-    tangyuanStartDown() {
+    tangyuanStartDown () {
       this.tangyuanStartTime = Date.now();
       this.tangyuanDown()
     },
@@ -100,13 +114,13 @@ export default {
      * @description: 汤圆下坠中
      * @param {*}
      * @return {*}
-     */    
+     */
     tangyuanDown () {
       let now = Date.now()
       let t = now - this.tangyuanStartTime
       let g = this.tangyuanG
       let y = g * t
-      this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y  + 'px';
+      this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y + 'px';
       this.tangyuanDownInterval = requestAnimationFrame(this.tangyuanDown)
     },
     /**
@@ -122,11 +136,11 @@ export default {
         // 此处暂时设定为一格的可用范围为屏幕高度的十分之一
         let screenSpan = this.screenHeight / 10
         // 设定间隙区间范围为屏幕中间的四格，那么间隙顶部的坐标范围就是屏幕的十分之三到（十分之七-间隙高度）之间
-        let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGapHeight))  + screenSpan * 3
+        let gapTop = Math.floor(Math.random() * (screenSpan * 7 - this.pillarGapHeight)) + screenSpan * 3
         let gapBottom = gapTop + this.pillarGapHeight
 
         // 根据间隙区间范围生成柱子
-        this.createPillarDom(0, this.screenHeight-gapTop, 'pillar-item-top')
+        this.createPillarDom(0, this.screenHeight - gapTop, 'pillar-item-top')
         this.createPillarDom(gapBottom, 0, 'pillar-item-bottom')
         this.createPillarLastTime = now
       }
@@ -136,7 +150,7 @@ export default {
      * @description: 柱子生成器
      * @param {*}
      * @return {*}
-     */    
+     */
     createPillarDom (top, bottom, className) {
       let pillar = document.createElement('div')
       // pillar.className = className
@@ -152,7 +166,7 @@ export default {
      * @param {*}
      * @return {*}
      */
-    movePillar() {
+    movePillar () {
       // 获取所有柱子
       let pillarDoms = this.$refs.pillarWrap.children
       let pillarList = Array.from(pillarDoms)
@@ -171,11 +185,21 @@ export default {
         return (item.offsetLeft + item.offsetWidth) < leftOne - this.$refs.tangyuan.offsetWidth / 2
       })
       if (prevDomIndex > -1) {
-        let prevTop = pillartListReverse[prevDomIndex]
-        let prevBottom = pillartListReverse[prevDomIndex + 1]
+        // 因为此处把数组反转了，所以prevDomIndex+1是上面那个
+        let prevTop = pillartListReverse[prevDomIndex + 1]
+        let prevBottom = pillartListReverse[prevDomIndex]
         if (!prevTop.isClear) {
+          // 给柱子添加净化效果
           prevTop.classList.add('pillar-item-active')
           prevBottom.classList.add('pillar-item-active')
+          // 从柱子间隙处生成能量飞往能量池
+          // 获取柱子间隙中心
+          let gapCenterX = prevTop.offsetLeft + this.pillarWidth / 2
+          let gapCenterY = prevTop.offsetHeight + this.pillarGapHeight / 2
+          // 生成能量
+          this.createEnergy(gapCenterX, gapCenterY)
+
+          prevTop.isClear = true
         }
       }
       // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
@@ -184,7 +208,7 @@ export default {
         return item.offsetLeft > leftTwo
       })
       let pillarTop = pillarList[nextDomIndex]
-      let pillarBottom = pillarList[nextDomIndex+1]
+      let pillarBottom = pillarList[nextDomIndex + 1]
 
       // 获取汤圆的半径及圆心坐标
       let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
@@ -194,7 +218,7 @@ export default {
       // 获取上方柱子中心的坐标
       let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
       let pillarTopCenterY = pillarTop.offsetHeight / 2
-      if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarTopCenterX, tangyuanCenterY-pillarTopCenterY)) {
+      if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
         this.gameOver()
         return
       }
@@ -203,12 +227,33 @@ export default {
       let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
       let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
 
-      if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarBottomCenterX, tangyuanCenterY-pillarBottomCenterY)) {
+      if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
         this.gameOver()
         return
       }
 
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
+    },
+    /**
+     * @description: 生成能量
+     * @param {*} x x轴坐标
+     * @param {*} y y轴坐标
+     * @return {*}
+     */
+    createEnergy (x, y) {
+      let energyItem = document.createElement('div')
+      energyItem.className = 'energy-item'
+      energyItem.style.left = x + 'px'
+      energyItem.style.top = y + 'px'
+      setTimeout(() => {
+        energyItem.style.left = 50 + '%'
+        energyItem.style.top = 50 + 'px'
+        setTimeout(() => {
+          this.energy++
+          // this.$refs.energyWrap.removeChild(energyItem)
+        }, 1000)
+      }, 300)
+      this.$refs.energyWrap.appendChild(energyItem)
     },
     /**
      * @description: 圆形与矩形的碰撞检测
@@ -218,7 +263,7 @@ export default {
      * @param {*} rx 圆心与矩形中心的x距离
      * @param {*} ry 圆心与矩形中心的y距离
      * @return {*}
-     */    
+     */
     computeCollision (w, h, r, rx, ry) {
       var dx = Math.min(rx, w * 0.5);
       var dx1 = Math.max(dx, -w * 0.5);
@@ -238,7 +283,7 @@ export default {
       cancelAnimationFrame(this.pillarMoveInterVal)
       alert('游戏结束')
     }
-    
+
   },
 }
 </script>
@@ -274,13 +319,30 @@ export default {
   transition: background-color 1s;
 }
 .pillar-item-top {
-  background: rgb(48, 48, 48) linear-gradient(to top, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
+  background: rgb(48, 48, 48)
+    linear-gradient(to top, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
 }
 .pillar-item-bottom {
-  background: rgb(48, 48, 48)  linear-gradient(to bottom, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
+  background: rgb(48, 48, 48)
+    linear-gradient(to bottom, rgba(255, 241, 113, 0), rgba(255, 253, 223, 0.5));
 }
 .pillar-item-active {
-  background-color: #ffd06c;
+  background-color: #ffdb8f;
   /* background-image: linear-gradient(to top, #ffd06c, #ffedc7); */
+}
+/* 能量 */
+.energy-item {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffeec4;
+  box-shadow: 0 0 2px 2px #ffeec4;
+  transition: all 1s;
+}
+.energy-fixed {
+  left: 50%;
+  top: 0;
+  z-index: 10;
 }
 </style>
