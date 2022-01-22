@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-22 23:43:36
+ * @LastEditTime: 2022-01-23 00:01:00
  * @Descripttion: 
 -->
 <template>
@@ -336,8 +336,8 @@ export default {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #ffeec4;
-  box-shadow: 0 0 2px 2px #ffeec4;
+      background: #98ff6e;
+    box-shadow: 0 0 2px 2px #98ff6e;
   transition: all 1s;
 }
 .energy-fixed {
