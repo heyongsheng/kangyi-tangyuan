@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-21 12:46:29
+ * @LastEditTime: 2022-01-22 23:15:51
  * @Descripttion: 
 -->
 <template>
@@ -170,6 +170,8 @@ export default {
 }
 .space-name {
   color: #fff;
+  font-weight: bold;
+  font-size: 26px;
   margin-top: -30px;
 }
 .bg-bottom {
