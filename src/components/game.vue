@@ -3,11 +3,12 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-21 13:28:17
+ * @LastEditTime: 2022-01-22 13:04:30
  * @Descripttion: 
 -->
 <template>
   <div class='game-wrap' @click="tangyuanUpEmit" @keyup.space="tangyuanUpEmit" autofocus tabindex="0">
+    <span style="color:#fff">{{energy}}</span>
     <!-- 柱子 -->
     <div class="pillar-wrap" ref="pillarWrap"></div>
     <!-- 汤圆 -->
@@ -40,6 +41,9 @@ export default {
       pillarGapHeight: 200, // 柱子的间距
       pillarMoveInterVal: null, // 柱子移动的定时器
       pillarSpeed: 2, // 柱子移动的速度
+
+      // 能量
+      energy: 100 // 当前能量
     }
   },
   mounted () {
@@ -102,7 +106,6 @@ export default {
       let t = now - this.tangyuanStartTime
       let g = this.tangyuanG
       let y = g * t
-      console.log(now -  this.tangyuanStartTime);
       this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y  + 'px';
       this.tangyuanDownInterval = requestAnimationFrame(this.tangyuanDown)
     },
@@ -161,23 +164,28 @@ export default {
           item.style.left = item.offsetLeft - this.pillarSpeed + 'px'
         }
       }
-      // 获取当前与汤圆最近右侧的柱子
-      let left = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
+      // 获取当前与汤圆最近左侧的柱子添加净化效果
+      let leftOne = this.$refs.tangyuan.offsetLeft
+      let pillartListReverse = [...pillarList].reverse()
+      let prevDomIndex = pillartListReverse.findIndex(item => {
+        return (item.offsetLeft + item.offsetWidth) < leftOne - this.$refs.tangyuan.offsetWidth / 2
+      })
+      if (prevDomIndex > -1) {
+        let prevTop = pillartListReverse[prevDomIndex]
+        let prevBottom = pillartListReverse[prevDomIndex + 1]
+        if (!prevTop.isClear) {
+          prevTop.classList.add('pillar-item-active')
+          prevBottom.classList.add('pillar-item-active')
+        }
+      }
+      // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
+      let leftTwo = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
       let nextDomIndex = pillarList.findIndex(item => {
-        return item.offsetLeft > left
+        return item.offsetLeft > leftTwo
       })
       let pillarTop = pillarList[nextDomIndex]
       let pillarBottom = pillarList[nextDomIndex+1]
 
-      // 给柱子添加净化效果
-      if (!pillarTop.clear) {
-        console.log(444);
-      }
-      if (!pillarTop.clear) {
-        console.log(444);
-      }
-      pillarTop.classList.add('pillar-item-active')
-      pillarBottom.classList.add('pillar-item-active')
       // 获取汤圆的半径及圆心坐标
       let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
       let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
@@ -186,8 +194,6 @@ export default {
       // 获取上方柱子中心的坐标
       let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
       let pillarTopCenterY = pillarTop.offsetHeight / 2
-      console.log(tangyuanCenterX);
-      console.log(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarTopCenterX, tangyuanCenterY-pillarTopCenterY);
       if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius,tangyuanCenterX-pillarTopCenterX, tangyuanCenterY-pillarTopCenterY)) {
         this.gameOver()
         return
@@ -201,21 +207,6 @@ export default {
         this.gameOver()
         return
       }
-
-      
-      // // 根绝上下柱子获取柱子间隙四个点的坐标
-      // let gapTop = pillarTop.offsetHeight
-      // let gapBottom = pillarBottom.offsetTop
-      // let gapLeft = pillarTop.offsetLeft
-      // let gapRight = pillarTop.offsetLeft + pillarTop.offsetWidth
-      // console.log(gapTop, gapBottom, gapLeft, gapRight);
-
-      // // 根据汤圆的位置判断是否碰撞
-      // if (this.$refs.tangyuan.offsetTop > gapTop && this.$refs.tangyuan.offsetTop < gapBottom) {
-      //   if (this.$refs.tangyuan.offsetLeft > gapLeft && this.$refs.tangyuan.offsetLeft < gapRight) {
-      //     alert('游戏结束')
-      //   }
-      // }
 
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
     },
