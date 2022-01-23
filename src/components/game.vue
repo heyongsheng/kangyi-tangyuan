@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 00:01:00
+ * @LastEditTime: 2022-01-23 17:41:03
  * @Descripttion: 
 -->
 <template>
@@ -15,6 +15,7 @@
     autofocus
     tabindex="0"
   >
+  <span>{{energy}}</span>
     <div class="energy-wrap" ref="energyWrap"></div>
     <div
       class="energy-fixed energy-item"
@@ -36,6 +37,10 @@ export default {
   name: '',
   data () {
     return {
+      // 游戏模式
+      mode: '', // story 故事模式 free 自由模式
+      stage: 0, // 阶段
+
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
 
@@ -48,6 +53,7 @@ export default {
       tangyuanDownInterval: null, // 汤圆下坠的定时器
 
       // 柱子部分
+      pillarCount: 0, // 已生成柱子的数量
       createPillarInterval: null, // 创建柱子的定时器
       createPillarLastTime: '', // 上一次创建柱子的时间
       pillarFrequency: 4000, // 柱子生成的频率 毫秒/次
@@ -57,15 +63,49 @@ export default {
       pillarSpeed: 2, // 柱子移动的速度
 
       // 能量
-      energy: 0 // 当前能量
+      energy: 0, // 当前能量
     }
   },
   mounted () {
     // this.tangyuanStartDown()
-    this.createPillar()
-    this.movePillar()
+    this.gameStart('story')
   },
   methods: {
+    /**
+     * @description: 开始游戏
+     * @param {*}
+     * @return {*}
+     */  
+    gameStart (mode) {
+      this.mode = mode
+      if (mode === 'story') {
+        this.stageChange(1)
+        this.movePillar()
+      } else {
+        this.createPillar()
+        this.movePillar()
+      }
+    },
+
+    /**
+     * @description: 故事模式下游戏阶段变化
+     * @param {*} stage
+     * @return {*}
+     */    
+    stageChange (stage) {
+      this.stage = stage
+      if (stage === 1) {
+        let _createPillar = () => {
+          this.createPillar()
+          if (this.pillarCount < 20) {
+            this.createPillarInterval = requestAnimationFrame(_createPillar)
+          } else {
+            this.stageChange(2)
+          }
+        }
+        _createPillar()
+      }
+    },
     /**
      * @description: 汤圆上抛触发器
      * @param {*}
@@ -143,8 +183,8 @@ export default {
         this.createPillarDom(0, this.screenHeight - gapTop, 'pillar-item-top')
         this.createPillarDom(gapBottom, 0, 'pillar-item-bottom')
         this.createPillarLastTime = now
+        this.pillarCount++
       }
-      this.createPillarInterval = requestAnimationFrame(this.createPillar)
     },
     /**
      * @description: 柱子生成器

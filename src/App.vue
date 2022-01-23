@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-17 22:06:53
+ * @LastEditTime: 2022-01-23 17:48:25
  * @Descripttion: 
 -->
 <template>
@@ -23,6 +23,11 @@ export default {
   components: {
     bg,
     game
+  },
+  data () {
+    return {
+      gameStatus: 'start', // 游戏状态，start：开始，pause：暂停，over：结束
+    }
   }
 }
 </script>
