@@ -3,15 +3,47 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 17:48:25
+ * @LastEditTime: 2022-01-23 20:52:15
  * @Descripttion: 
 -->
 <template>
   <div id="app">
+    <!-- 建议打开声音遮罩 -->
+    <transition name="fade">
+      <div class="audio-mask" v-show="audioMask" @click="audioMask = false">
+        <div class="audio-mask-container">
+          <p class="audio-mask-text">打开声音可使游戏体验大大提高，强烈建议您打开声音</p>
+          <div class="mask-btn-wrap">
+            <div class="mask-btn" @click="openAudio">打开</div>
+            <div class="mask-btn">算了</div>
+          </div>
+        </div>
+      </div>
+    </transition>
     <!-- 背景 -->
     <bg></bg>
+    <!-- 菜单 -->
+    <transition name="fade">
+      <div class="menu-wrap" v-show="gameStatus === 'menu'">
+        <div class="game-title"><span class="letter">抗疫的汤</span>圆</div>
+        <div class="menu-box">
+          <div
+            class="menu-item"
+            v-for="(item, index) in menuList"
+            :key="index"
+            @mouseover="$audio.playAudio(hoverMusic)"
+            @click="$audio.playAudio(clickMusic), item.clickHandle()"
+            v-show="item.show()"
+          >
+            {{ item.name }}
+          </div>
+        </div>
+      </div>
+    </transition>
     <!-- 游戏区 -->
-    <game></game>
+    <transition name="fade">
+      <game v-show="gameStatus === 'start'" ref="game"></game>
+    </transition>
   </div>
 </template>
 
@@ -24,9 +56,58 @@ export default {
     bg,
     game
   },
+  mounted () {
+  },
   data () {
     return {
-      gameStatus: 'start', // 游戏状态，start：开始，pause：暂停，over：结束
+      audioMask: true, // 是否打开声音遮罩
+      hoverMusic: require('./assets/audio/hover.mp3'),
+      clickMusic: require('./assets/audio/click.mp3'),
+      windMusic: require('./assets/audio/wind.mp3'),
+      gameStatus: 'menu', // 游戏状态，menu：菜单，start：游戏，over：结束
+      menuList: [
+        {
+          name: '自由模式',
+          clickHandle: () => {
+            this.gameBegin()
+          },
+          show: () => true
+        },
+        {
+          name: '故事模式',
+          clickHandle: () => {
+            this.gameStatus = 'start'
+            this.$nextTick(() => {
+              this.$refs.game.gameStart('story')
+            })
+          },
+          show: () => true
+        },
+        {
+          name: '打开声音',
+          clickHandle: () => {
+            this.$audio.status = true
+            this.$audio.backMusicPlay(this.windMusic)
+            this.$forceUpdate()
+          },
+          show: () => !this.$audio.status
+        },
+        {
+          name: '关闭声音',
+          clickHandle: () => {
+            this.$audio.status = false
+            this.$forceUpdate()
+          },
+          show: () => this.$audio.status
+        },
+      ]
+    }
+  },
+  methods: {
+    openAudio () {
+      this.$audio.status = true
+      this.$audio.backMusicPlay(this.windMusic)
+      // this.$forceUpdate()
     }
   }
 }
@@ -38,5 +119,100 @@ export default {
   padding: 0;
   user-select: none;
   font-family: PingFangSC-Regular, Microsoft Yahei, sans-serif;
+}
+#app {
+  width: 100%;
+}
+/* 声音建议遮罩 */
+.audio-mask {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  right: -300px;
+  bottom: 0;
+  background: rgba(0, 0, 0, 1);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+}
+.audio-mask-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  max-width: 35%;
+  min-width: 300px;
+}
+.mask-btn-wrap {
+  margin-top: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+/* 菜单区 */
+.menu-wrap {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.game-title {
+  position: absolute;
+  font-size: 86px;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+  top: 10vh;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.letter {
+  letter-spacing: 50px;
+}
+.menu-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  letter-spacing: 5px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+}
+.menu-item {
+  opacity: 0.8;
+  cursor: pointer;
+  transition: all 0.4s;
+}
+.menu-item:hover {
+  opacity: 1;
+}
+.menu-item:not(:first-child) {
+  margin-top: 30px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 1s, transform 1s;
+}
+.fade-enter /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+  transform: translateX(200px)
+}
+.fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+  transform: translateX(-200px)
+}
+
+@media screen and (max-width: 768px) {
+  /* .game-title {
+    font-size: 24px;
+    letter-spacing: 5px;
+  } */
 }
 </style>

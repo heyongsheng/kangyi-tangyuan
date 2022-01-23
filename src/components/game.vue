@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 17:41:03
+ * @LastEditTime: 2022-01-23 20:53:32
  * @Descripttion: 
 -->
 <template>
@@ -37,6 +37,8 @@ export default {
   name: '',
   data () {
     return {
+      starMusic: require('../assets/audio/star.mp3'),
+
       // 游戏模式
       mode: '', // story 故事模式 free 自由模式
       stage: 0, // 阶段
@@ -68,7 +70,7 @@ export default {
   },
   mounted () {
     // this.tangyuanStartDown()
-    this.gameStart('story')
+    // this.gameStart('story')
   },
   methods: {
     /**
@@ -77,6 +79,8 @@ export default {
      * @return {*}
      */  
     gameStart (mode) {
+      this.$refs.gameWrap.focus()
+      this.$audio.backMusicPlay(this.starMusic)
       this.mode = mode
       if (mode === 'story') {
         this.stageChange(1)
@@ -321,6 +325,7 @@ export default {
       cancelAnimationFrame(this.tangyuanDownInterval)
       cancelAnimationFrame(this.createPillarInterval)
       cancelAnimationFrame(this.pillarMoveInterVal)
+      this.$audio.backMusicStop()
       alert('游戏结束')
     }
 
