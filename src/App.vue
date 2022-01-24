@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 20:52:15
+ * @LastEditTime: 2022-01-24 23:46:30
  * @Descripttion: 
 -->
 <template>
@@ -42,7 +42,7 @@
     </transition>
     <!-- 游戏区 -->
     <transition name="fade">
-      <game v-show="gameStatus === 'start'" ref="game"></game>
+      <game @goHome="gameStatus = 'menu'" v-show="gameStatus === 'start'" ref="game"></game>
     </transition>
   </div>
 </template>
@@ -103,6 +103,13 @@ export default {
       ]
     }
   },
+  watch: {
+    gameStatus (val) {
+      if (val === 'menu') {
+        this.$audio.backMusicPlay(this.windMusic)
+      }
+    }
+  },
   methods: {
     openAudio () {
       this.$audio.status = true
@@ -121,7 +128,12 @@ export default {
   font-family: PingFangSC-Regular, Microsoft Yahei, sans-serif;
 }
 #app {
-  width: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
 }
 /* 声音建议遮罩 */
 .audio-mask {
@@ -161,6 +173,7 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
+  overflow: hidden;
 }
 .game-title {
   position: absolute;

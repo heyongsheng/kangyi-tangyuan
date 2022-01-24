@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 20:53:32
+ * @LastEditTime: 2022-01-25 00:57:08
  * @Descripttion: 
 -->
 <template>
@@ -28,6 +28,16 @@
     <div class="pillar-wrap" ref="pillarWrap"></div>
     <!-- 汤圆 -->
     <div class="tangyuan" ref="tangyuan"></div>
+    <!-- 游戏失败 -->
+    <transition name="fade">
+      <div class="fail-wrap" v-show="gameStatus === 'fail'">
+        <img class="fail-img" src="../assets/img/comeon.png">
+        <div class="fail-btn-wrap">
+          <div class="fail-btn" @click="gameStatus = '', $emit('goHome')">返回菜单</div>
+          <div class="fail-btn" @click.stop="stageChange(stage, true)">再来一次</div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -38,10 +48,19 @@ export default {
   data () {
     return {
       starMusic: require('../assets/audio/star.mp3'),
+      reunionMusic: require('../assets/audio/reunion.mp3'),
+
+      // 游戏状态
+      gameStatus: 'start',
 
       // 游戏模式
       mode: '', // story 故事模式 free 自由模式
+
+      // 故事模式特有属性
       stage: 0, // 阶段
+      stageOneEnergyCount: 5, // 故事模式下阶段一的能量数
+      lifeValue: 0, // 故事模式下阶段二的生命值
+      stageTwoEnergyCount: 10, // 故事模式下阶段二的能量数
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
@@ -79,8 +98,8 @@ export default {
      * @return {*}
      */  
     gameStart (mode) {
+      this.gameStatus = 'start'
       this.$refs.gameWrap.focus()
-      this.$audio.backMusicPlay(this.starMusic)
       this.mode = mode
       if (mode === 'story') {
         this.stageChange(1)
@@ -94,17 +113,44 @@ export default {
     /**
      * @description: 故事模式下游戏阶段变化
      * @param {*} stage
+     * @param {*} isRestart 是否重新开始
      * @return {*}
      */    
-    stageChange (stage) {
+    stageChange (stage, isRestart = false) {
+      // 重置状态
+      if (isRestart) {
+        // 清空所有柱子
+        this.$refs.pillarWrap.innerHTML = ''
+        // 柱子开始移动
+        this.movePillar()
+        this.gameStatus = 'start'
+        this.$refs.tangyuan.style.left= '50%'
+        this.$refs.tangyuan.style.top= '50%'
+      }
       this.stage = stage
       if (stage === 1) {
+        // 重置状态
+        this.energy = 0
+        this.pillarCount = 0
+        this.$audio.backMusicPlay(this.starMusic)
         let _createPillar = () => {
           this.createPillar()
-          if (this.pillarCount < 20) {
+          if (this.pillarCount < this.stageOneEnergyCount) {
             this.createPillarInterval = requestAnimationFrame(_createPillar)
-          } else {
-            this.stageChange(2)
+          }
+        }
+        _createPillar()
+      }
+      if (stage === 2) {
+        this.lifeValue = 3
+        this.pillarCount = this.stageOneEnergyCount
+        this.$audio.backMusicPlay(this.reunionMusic)
+        this.$audio.backMusic.currentTime = 114
+
+        let _createPillar = () => {
+          this.createPillar()
+          if (this.pillarCount < this.stageOneEnergyCount) {
+            this.createPillarInterval = requestAnimationFrame(_createPillar)
           }
         }
         _createPillar()
@@ -116,7 +162,11 @@ export default {
      * @return {*}
      */
     tangyuanUpEmit () {
-      this.tangyuanStartUp()
+      console.log(5);
+      if (this.gameStatus === 'start') {
+        this.tangyuanStartUp()
+      }
+      // this.tangyuanStartUp()
     },
     /**
      * @description: 汤圆开始上抛
@@ -251,31 +301,32 @@ export default {
       let nextDomIndex = pillarList.findIndex(item => {
         return item.offsetLeft > leftTwo
       })
-      let pillarTop = pillarList[nextDomIndex]
-      let pillarBottom = pillarList[nextDomIndex + 1]
+      if (nextDomIndex > -1) {
+        let pillarTop = pillarList[nextDomIndex]
+        let pillarBottom = pillarList[nextDomIndex + 1]
 
-      // 获取汤圆的半径及圆心坐标
-      let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
-      let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
-      let tangyuanCenterY = this.$refs.tangyuan.offsetTop
-      // 检测汤圆与上方柱子是否碰撞
-      // 获取上方柱子中心的坐标
-      let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
-      let pillarTopCenterY = pillarTop.offsetHeight / 2
-      if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
-        this.gameOver()
-        return
+        // 获取汤圆的半径及圆心坐标
+        let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
+        let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
+        let tangyuanCenterY = this.$refs.tangyuan.offsetTop
+        // 检测汤圆与上方柱子是否碰撞
+        // 获取上方柱子中心的坐标
+        let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
+        let pillarTopCenterY = pillarTop.offsetHeight / 2
+        if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
+          this.gameFail()
+          return
+        }
+        // 检测汤圆与下方柱子是否碰撞
+        // 获取下方柱子中心的坐标
+        let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
+        let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
+
+        if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
+          this.gameFail()
+          return
+        }
       }
-      // 检测汤圆与下方柱子是否碰撞
-      // 获取下方柱子中心的坐标
-      let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
-      let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
-
-      if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
-        this.gameOver()
-        return
-      }
-
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
     },
     /**
@@ -294,7 +345,12 @@ export default {
         energyItem.style.top = 50 + 'px'
         setTimeout(() => {
           this.energy++
-          // this.$refs.energyWrap.removeChild(energyItem)
+          if(this.energy === this.stageOneEnergyCount && this.mode === 'story') {
+            this.$audio.backMusicStop()
+            setTimeout(() => {
+              this.stageChange(2)
+            }, 2000)
+          }
         }, 1000)
       }, 300)
       this.$refs.energyWrap.appendChild(energyItem)
@@ -314,6 +370,19 @@ export default {
       var dy = Math.min(ry, h * 0.5);
       var dy1 = Math.max(dy, -h * 0.5);
       return (dx1 - rx) * (dx1 - rx) + (dy1 - ry) * (dy1 - ry) <= r * r;
+    },
+    /**
+     * @description: 失败
+     * @param {*}
+     * @return {*}
+     */    
+    gameFail () {
+      this.gameStatus = 'fail'
+      cancelAnimationFrame(this.tangyuanUpInterval)
+      cancelAnimationFrame(this.tangyuanDownInterval)
+      cancelAnimationFrame(this.createPillarInterval)
+      cancelAnimationFrame(this.pillarMoveInterVal)
+      this.$audio.backMusicStop()
     },
     /**
      * @description: 游戏结束
@@ -381,13 +450,50 @@ export default {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-      background: #98ff6e;
-    box-shadow: 0 0 2px 2px #98ff6e;
+  background: #98ff6e;
+  box-shadow: 0 0 2px 2px #98ff6e;
   transition: all 1s;
 }
 .energy-fixed {
   left: 50%;
   top: 0;
   z-index: 10;
+}
+
+/* 游戏失败弹窗 */
+.fail-wrap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -300px;
+  right: -300px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  background: #5a6165;
+  z-index: 12;
+}
+.fail-img {
+  width: 30%;
+  max-width: 357px;
+}
+.fail-btn-wrap {
+  margin-top: 10vh;
+  width: 30%;
+  max-width: 357px;
+  font-size: 26px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+  display: flex;
+  justify-content: space-between;
+}
+.fail-btn {
+  cursor: pointer;
+  opacity: .8;
+  transition: all .3s;
+}
+.fail-btn:hover {
+  opacity: 1;
 }
 </style>
