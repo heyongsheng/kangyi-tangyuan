@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-26 01:00:38
+ * @LastEditTime: 2022-01-26 01:05:14
  * @Descripttion: 
 -->
 <template>
@@ -326,8 +326,10 @@ export default {
           // 获取柱子间隙中心
           let gapCenterX = prevTop.offsetLeft + this.pillarWidth / 2
           let gapCenterY = prevTop.offsetHeight + this.pillarGapHeight / 2
-          // 生成能量
-          this.createEnergy(gapCenterX, gapCenterY)
+          // 生成能量，阶段三不生成能量
+          if (this.stage !== 3) {
+            this.createEnergy(gapCenterX, gapCenterY)
+          }
           prevTop.isClear = true
         }
       }
