@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-25 00:57:08
+ * @LastEditTime: 2022-01-25 17:38:03
  * @Descripttion: 
 -->
 <template>
@@ -28,6 +28,10 @@
     <div class="pillar-wrap" ref="pillarWrap"></div>
     <!-- 汤圆 -->
     <div class="tangyuan" ref="tangyuan"></div>
+    <!-- 血量 -->
+    <div class="blood-wrap" ref="bloodWrap">
+      <div class="blood-item" v-for="(item, index) in lifeValue" :key="index"></div>
+    </div>
     <!-- 游戏失败 -->
     <transition name="fade">
       <div class="fail-wrap" v-show="gameStatus === 'fail'">
@@ -58,8 +62,8 @@ export default {
 
       // 故事模式特有属性
       stage: 0, // 阶段
-      stageOneEnergyCount: 5, // 故事模式下阶段一的能量数
-      lifeValue: 0, // 故事模式下阶段二的生命值
+      stageOneEnergyCount: 1, // 故事模式下阶段一的能量数
+      lifeValue: 3, // 故事模式下阶段二的生命值
       stageTwoEnergyCount: 10, // 故事模式下阶段二的能量数
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
@@ -149,7 +153,7 @@ export default {
 
         let _createPillar = () => {
           this.createPillar()
-          if (this.pillarCount < this.stageOneEnergyCount) {
+          if (this.pillarCount < this.stageTwoEnergyCount) {
             this.createPillarInterval = requestAnimationFrame(_createPillar)
           }
         }
@@ -162,7 +166,6 @@ export default {
      * @return {*}
      */
     tangyuanUpEmit () {
-      console.log(5);
       if (this.gameStatus === 'start') {
         this.tangyuanStartUp()
       }
@@ -261,6 +264,7 @@ export default {
      * @return {*}
      */
     movePillar () {
+      console.log('柱子移动');
       // 获取所有柱子
       let pillarDoms = this.$refs.pillarWrap.children
       let pillarList = Array.from(pillarDoms)
@@ -292,39 +296,41 @@ export default {
           let gapCenterY = prevTop.offsetHeight + this.pillarGapHeight / 2
           // 生成能量
           this.createEnergy(gapCenterX, gapCenterY)
-
           prevTop.isClear = true
         }
       }
-      // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
-      let leftTwo = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
-      let nextDomIndex = pillarList.findIndex(item => {
-        return item.offsetLeft > leftTwo
-      })
-      if (nextDomIndex > -1) {
-        let pillarTop = pillarList[nextDomIndex]
-        let pillarBottom = pillarList[nextDomIndex + 1]
+      // 判断汤圆是否处于无敌状态
+      if (this.$refs.tangyuan.status !== 'invincible') {
+        // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
+        let leftTwo = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
+        let nextDomIndex = pillarList.findIndex(item => {
+          return item.offsetLeft > leftTwo
+        })
+        if (nextDomIndex > -1) {
+          let pillarTop = pillarList[nextDomIndex]
+          let pillarBottom = pillarList[nextDomIndex + 1]
 
-        // 获取汤圆的半径及圆心坐标
-        let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
-        let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
-        let tangyuanCenterY = this.$refs.tangyuan.offsetTop
-        // 检测汤圆与上方柱子是否碰撞
-        // 获取上方柱子中心的坐标
-        let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
-        let pillarTopCenterY = pillarTop.offsetHeight / 2
-        if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
-          this.gameFail()
-          return
-        }
-        // 检测汤圆与下方柱子是否碰撞
-        // 获取下方柱子中心的坐标
-        let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
-        let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
+          // 获取汤圆的半径及圆心坐标
+          let tangyuanRadius = this.$refs.tangyuan.offsetWidth / 2
+          let tangyuanCenterX = this.$refs.tangyuan.offsetLeft
+          let tangyuanCenterY = this.$refs.tangyuan.offsetTop
+          // 检测汤圆与上方柱子是否碰撞
+          // 获取上方柱子中心的坐标
+          let pillarTopCenterX = pillarTop.offsetLeft + this.pillarWidth / 2
+          let pillarTopCenterY = pillarTop.offsetHeight / 2
+          if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
+            this.gameFail()
+            return
+          }
+          // 检测汤圆与下方柱子是否碰撞
+          // 获取下方柱子中心的坐标
+          let pillarBottomCenterX = pillarBottom.offsetLeft + this.pillarWidth / 2
+          let pillarBottomCenterY = pillarTop.offsetHeight + this.pillarGapHeight + pillarBottom.offsetHeight / 2
 
-        if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
-          this.gameFail()
-          return
+          if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
+            this.gameFail()
+            return
+          }
         }
       }
       this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
@@ -377,6 +383,26 @@ export default {
      * @return {*}
      */    
     gameFail () {
+      // 判断是否处于无敌状态
+      if (this.$refs.tangyuan.status === 'invincible') {
+        return
+      }
+
+      if (this.stage === 2 && this.lifeValue > 0) {
+        // 如果处于阶段二并且生命值大于0，则添加无敌状态，生命值减一
+        this.$refs.tangyuan.style.opacity = .5
+        this.$refs.tangyuan.status = 'invincible'
+        this.lifeValue--
+        this.movePillar()
+        setTimeout(() => {
+          this.$refs.tangyuan.style.opacity = 1
+          this.$refs.tangyuan.status = ''
+        }, 2000)
+        return
+      }
+      console.log(666666);
+      console.log(this.stage);
+      console.log(this.lifeValue);
       this.gameStatus = 'fail'
       cancelAnimationFrame(this.tangyuanUpInterval)
       cancelAnimationFrame(this.tangyuanDownInterval)
@@ -389,14 +415,14 @@ export default {
      * @param {*}
      * @return {*}
      */
-    gameOver () {
-      cancelAnimationFrame(this.tangyuanUpInterval)
-      cancelAnimationFrame(this.tangyuanDownInterval)
-      cancelAnimationFrame(this.createPillarInterval)
-      cancelAnimationFrame(this.pillarMoveInterVal)
-      this.$audio.backMusicStop()
-      alert('游戏结束')
-    }
+    // gameOver () {
+    //   cancelAnimationFrame(this.tangyuanUpInterval)
+    //   cancelAnimationFrame(this.tangyuanDownInterval)
+    //   cancelAnimationFrame(this.createPillarInterval)
+    //   cancelAnimationFrame(this.pillarMoveInterVal)
+    //   this.$audio.backMusicStop()
+    //   alert('游戏结束')
+    // }
 
   },
 }
@@ -458,6 +484,24 @@ export default {
   left: 50%;
   top: 0;
   z-index: 10;
+}
+
+/* 血量 */
+.blood-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 10vh;
+  display: flex;
+  justify-content: space-between;
+  width: 50px;
+  height: 50px;
+  z-index: 11;
+}
+.blood-item {
+  width: 5px;
+  height: 50px;
+  background: bisque;
+  box-shadow: 0 0 5px 2px bisque;
 }
 
 /* 游戏失败弹窗 */
