@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-26 01:05:14
+ * @LastEditTime: 2022-01-26 01:10:30
  * @Descripttion: 
 -->
 <template>
@@ -65,7 +65,7 @@ export default {
       stageOneEnergyCount: 26, // 故事模式下阶段一的能量数
       lifeValue: 0, // 故事模式下阶段二的生命值
       stageTwoEnergyCount: 30, // 故事模式下阶段二的能量数
-      stageThreeEnergyCount: 100, // 故事模式下阶段二的能量数
+      stageThreeEnergyCount: 1000, // 故事模式下阶段二的能量数
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
