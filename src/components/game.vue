@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-25 17:38:03
+ * @LastEditTime: 2022-01-26 01:00:38
  * @Descripttion: 
 -->
 <template>
@@ -21,7 +21,7 @@
       class="energy-fixed energy-item"
       v-show="energy"
       :style="{
-        transform: `translate(-50%, 50px) scale(${1 + (energy - 1) / 2})`,
+        transform: `translate(-50%, 50px) scale(${1 + (energy - 1) / 5})`,
       }"
     ></div>
     <!-- 柱子 -->
@@ -62,9 +62,10 @@ export default {
 
       // 故事模式特有属性
       stage: 0, // 阶段
-      stageOneEnergyCount: 1, // 故事模式下阶段一的能量数
-      lifeValue: 3, // 故事模式下阶段二的生命值
-      stageTwoEnergyCount: 10, // 故事模式下阶段二的能量数
+      stageOneEnergyCount: 26, // 故事模式下阶段一的能量数
+      lifeValue: 0, // 故事模式下阶段二的生命值
+      stageTwoEnergyCount: 30, // 故事模式下阶段二的能量数
+      stageThreeEnergyCount: 100, // 故事模式下阶段二的能量数
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
@@ -106,7 +107,7 @@ export default {
       this.$refs.gameWrap.focus()
       this.mode = mode
       if (mode === 'story') {
-        this.stageChange(1)
+        this.stageChange(2)
         this.movePillar()
       } else {
         this.createPillar()
@@ -134,9 +135,16 @@ export default {
       this.stage = stage
       if (stage === 1) {
         // 重置状态
+        this.lifeValue = 3
         this.energy = 0
         this.pillarCount = 0
-        this.$audio.backMusicPlay(this.starMusic)
+        this.$audio.backMusicPlay(this.reunionMusic)
+        // 
+        this.$audio.backMusic.playbackRate = 2
+        // 
+        this.pillarSpeed = 4
+        this.pillarFrequency = 2000
+        this.pillarGapHeight = 220
         let _createPillar = () => {
           this.createPillar()
           if (this.pillarCount < this.stageOneEnergyCount) {
@@ -147,15 +155,39 @@ export default {
       }
       if (stage === 2) {
         this.lifeValue = 3
+        this.energy = this.stageOneEnergyCount
         this.pillarCount = this.stageOneEnergyCount
         this.$audio.backMusicPlay(this.reunionMusic)
         this.$audio.backMusic.currentTime = 114
+        this.pillarSpeed = 3
+        this.pillarFrequency = 3000
+        this.pillarGapHeight = 200
 
         let _createPillar = () => {
           this.createPillar()
           if (this.pillarCount < this.stageTwoEnergyCount) {
             this.createPillarInterval = requestAnimationFrame(_createPillar)
           }
+        }
+        _createPillar()
+      }
+      
+      if (stage === 3) {
+        // 阶段3不必暂停音乐，因为不会从阶段3开始
+        // this.lifeValue = 3
+        this.energy = this.stageTwoEnergyCount
+        this.pillarCount = this.stageTwoEnergyCount
+        // this.$audio.backMusicPlay(this.reunionMusic)
+        this.pillarSpeed = 4
+        this.pillarFrequency = 2000
+        this.pillarGapHeight = 120
+
+        let _createPillar = () => {
+          this.createPillar()
+          this.createPillarInterval = requestAnimationFrame(_createPillar)
+          // if (this.pillarCount < this.stageThreeEnergyCount) {
+          //   this.createPillarInterval = requestAnimationFrame(_createPillar)
+          // }
         }
         _createPillar()
       }
@@ -351,11 +383,15 @@ export default {
         energyItem.style.top = 50 + 'px'
         setTimeout(() => {
           this.energy++
+          this.$refs.energyWrap.removeChild(energyItem)
           if(this.energy === this.stageOneEnergyCount && this.mode === 'story') {
             this.$audio.backMusicStop()
             setTimeout(() => {
               this.stageChange(2)
             }, 2000)
+          }
+          if(this.energy === this.stageTwoEnergyCount && this.mode === 'story') {
+            this.stageChange(3)
           }
         }, 1000)
       }, 300)
@@ -388,7 +424,7 @@ export default {
         return
       }
 
-      if (this.stage === 2 && this.lifeValue > 0) {
+      if (this.lifeValue > 0) {
         // 如果处于阶段二并且生命值大于0，则添加无敌状态，生命值减一
         this.$refs.tangyuan.style.opacity = .5
         this.$refs.tangyuan.status = 'invincible'
@@ -400,15 +436,83 @@ export default {
         }, 2000)
         return
       }
-      console.log(666666);
-      console.log(this.stage);
-      console.log(this.lifeValue);
-      this.gameStatus = 'fail'
+      this.$audio.backMusicStop()
       cancelAnimationFrame(this.tangyuanUpInterval)
       cancelAnimationFrame(this.tangyuanDownInterval)
       cancelAnimationFrame(this.createPillarInterval)
       cancelAnimationFrame(this.pillarMoveInterVal)
-      this.$audio.backMusicStop()
+      // 如果处于阶段三失败，则播放赋能效果
+      if (this.stage === 3) {
+        // 询问是否坚持
+        setTimeout(() => {
+          if (confirm('还要继续坚持吗？')) {
+            // 音乐跳转至174秒
+            this.$audio.backMusicPlay(this.reunionMusic)
+            this.$audio.backMusic.currentTime = 174
+            // 汤圆移动到屏幕中央
+            cancelAnimationFrame(this.tangyuanDownInterval)
+            this.$refs.tangyuan.style.left = '50%'
+            this.$refs.tangyuan.style.top = '50%'
+
+            // 能量赋值
+            let _createEnergy = (wait) => {
+              setTimeout(() => {
+                let energyItem = document.createElement('div')
+                energyItem.className = 'energy-item'
+                energyItem.style.left = 50 + '%'
+                energyItem.style.top = 50 + 'px'
+                setTimeout(() => {
+                  energyItem.style.left = 50 + '%'
+                  energyItem.style.top = 50 + '%'
+                  this.energy--
+                  if (this.energy > 0) {
+                    _createEnergy(this.energy)
+                  } else {
+                    console.log(555);
+                    // 能量赋值完毕，开始前行
+                    this.$refs.tangyuan.status = 'invincible'
+                    this.pillarSpeed = 3
+                    this.pillarFrequency = 3000
+                    this.pillarGapHeight = 120
+                    let _Interval = setInterval(() => {
+                      this.pillarSpeed++
+                      this.pillarFrequency-=160
+                      if (this.pillarSpeed >= 20) {
+                        clearInterval(_Interval)
+                      }
+                    }, 300)
+                    this.movePillar()
+                    let _createPillar = () => {
+                      this.createPillar()
+                      if (this.pillarCount < this.stageThreeEnergyCount) {
+                        this.createPillarInterval = requestAnimationFrame(_createPillar)
+                      }
+                    }
+                    _createPillar()
+                  }
+                }, 16)
+                this.$refs.energyWrap.appendChild(energyItem)
+              }, 500 * (wait / this.stageTwoEnergyCount))
+            }
+            _createEnergy(this.energy)
+
+            // let energyDoms = this.$refs.energyWrap.children
+            // let energyList = Array.from(energyDoms)
+            // energyList.map((item, key) => {
+            //   setTimeout(() => {
+            //     console.log(item);
+            //     item.style.left = 50 + '%'
+            //     item.style.top = 50 + '%'
+            //   }, 1000 + key * 200)
+            // })
+          }
+        }, 2000)
+        
+        
+        // 恢复创建柱子和柱子移动
+        return
+      }
+      this.gameStatus = 'fail'
     },
     /**
      * @description: 游戏结束
@@ -445,6 +549,7 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 13;
 }
 /* 柱子 */
 .pillar-wrap {
@@ -479,6 +584,7 @@ export default {
   background: #98ff6e;
   box-shadow: 0 0 2px 2px #98ff6e;
   transition: all 1s;
+  z-index: 12;
 }
 .energy-fixed {
   left: 50%;
@@ -492,8 +598,8 @@ export default {
   left: 50%;
   bottom: 10vh;
   display: flex;
-  justify-content: space-between;
-  width: 50px;
+  justify-content: flex-start;
+  /* width: 50px; */
   height: 50px;
   z-index: 11;
 }
@@ -502,6 +608,9 @@ export default {
   height: 50px;
   background: bisque;
   box-shadow: 0 0 5px 2px bisque;
+}
+.blood-item:not(:last-child) {
+  margin-right: 15px;
 }
 
 /* 游戏失败弹窗 */
@@ -516,7 +625,7 @@ export default {
   flex-direction: column;
   align-items: center;
   background: #5a6165;
-  z-index: 12;
+  z-index: 20;
 }
 .fail-img {
   width: 30%;
