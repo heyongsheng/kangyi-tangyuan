@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 02:01:20
+ * @LastEditTime: 2022-01-27 02:04:34
  * @Descripttion: 
 -->
 <template>
@@ -109,7 +109,7 @@ export default {
       this.$refs.gameWrap.focus()
       this.mode = mode
       if (mode === 'story') {
-        this.stageChange(1)
+        this.stageChange(2, true)
         this.movePillar()
       } else {
         this.createPillar()
@@ -479,6 +479,9 @@ export default {
                     this.pillarSpeed = 2
                     this.pillarFrequency = 3000
                     this.pillarGapHeight = 120
+                    this.stage3Messages.map((item) => {
+                      this.$alert.showText(item, 1000)
+                    })
                     let _Interval = setInterval(() => {
                       this.pillarSpeed++
                       this.pillarFrequency-=160
