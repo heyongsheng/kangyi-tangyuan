@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 00:40:09
+ * @LastEditTime: 2022-01-27 02:01:20
  * @Descripttion: 
 -->
 <template>
@@ -66,6 +66,7 @@ export default {
       lifeValue: 0, // 故事模式下阶段二的生命值
       stageTwoEnergyCount: 30, // 故事模式下阶段二的能量数
       stageThreeEnergyCount: 1000, // 故事模式下阶段二的能量数
+      stage3Messages: require('../assets/data/stage3.json'),
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
       screenHeight: document.documentElement.clientHeight, // 屏幕高度
@@ -108,7 +109,7 @@ export default {
       this.$refs.gameWrap.focus()
       this.mode = mode
       if (mode === 'story') {
-        this.stageChange(2)
+        this.stageChange(1)
         this.movePillar()
       } else {
         this.createPillar()
@@ -141,10 +142,10 @@ export default {
         this.pillarCount = 0
         this.$audio.backMusicPlay(this.reunionMusic)
         // 
-        this.$audio.backMusic.playbackRate = 2
+        // this.$audio.backMusic.playbackRate = 2
         // 
-        this.pillarSpeed = 4
-        this.pillarFrequency = 2000
+        this.pillarSpeed = 2
+        this.pillarFrequency = 4000
         this.pillarGapHeight = 220
         let _createPillar = () => {
           this.createPillar()
@@ -457,6 +458,7 @@ export default {
             cancelAnimationFrame(this.tangyuanDownInterval)
             this.$refs.tangyuan.style.left = '50%'
             this.$refs.tangyuan.style.top = '50%'
+            this.$alert.showText('加油！')
 
             // 能量赋值
             let _createEnergy = (wait) => {
