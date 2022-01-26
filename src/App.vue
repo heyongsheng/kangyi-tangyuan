@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-24 23:46:30
+ * @LastEditTime: 2022-01-27 00:26:18
  * @Descripttion: 
 -->
 <template>
@@ -220,6 +220,20 @@ export default {
 .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
   transform: translateX(-200px)
+}
+
+/* 提示语样式 */
+.alert-text {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%);
+  font-size: 32px;
+  opacity: 1;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+  transition: all 1s;
+  
 }
 
 @media screen and (max-width: 768px) {

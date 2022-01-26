@@ -3,7 +3,7 @@
  * @Date: 2022-01-23 17:23:34
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 20:25:31
+ * @LastEditTime: 2022-01-27 00:07:34
  * @Descripttion: 
  */
 class AudioObj {
@@ -31,7 +31,6 @@ class AudioObj {
       this.backMusic.volume = 0
       this.backMusic.play()
       this.playInterval = setInterval(() => {
-        console.log(this.backMusic.volume);
         if (this.backMusic.volume < 1) {
           this.backMusic.volume = (this.backMusic.volume + 0.1).toFixed(1)
         } else {

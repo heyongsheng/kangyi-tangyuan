@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-26 01:10:30
+ * @LastEditTime: 2022-01-27 00:40:09
  * @Descripttion: 
 -->
 <template>
@@ -103,6 +103,7 @@ export default {
      * @return {*}
      */  
     gameStart (mode) {
+      this.$alert.showText('轻点屏幕或按空格键开始游戏')
       this.gameStatus = 'start'
       this.$refs.gameWrap.focus()
       this.mode = mode
@@ -154,6 +155,7 @@ export default {
         _createPillar()
       }
       if (stage === 2) {
+        this.$alert.showText('进入第二阶段')
         this.lifeValue = 3
         this.energy = this.stageOneEnergyCount
         this.pillarCount = this.stageOneEnergyCount
@@ -173,6 +175,7 @@ export default {
       }
       
       if (stage === 3) {
+        this.$alert.showText('进入第三阶段')
         // 阶段3不必暂停音乐，因为不会从阶段3开始
         // this.lifeValue = 3
         this.energy = this.stageTwoEnergyCount
@@ -296,7 +299,6 @@ export default {
      * @return {*}
      */
     movePillar () {
-      console.log('柱子移动');
       // 获取所有柱子
       let pillarDoms = this.$refs.pillarWrap.children
       let pillarList = Array.from(pillarDoms)
@@ -470,10 +472,9 @@ export default {
                   if (this.energy > 0) {
                     _createEnergy(this.energy)
                   } else {
-                    console.log(555);
                     // 能量赋值完毕，开始前行
                     this.$refs.tangyuan.status = 'invincible'
-                    this.pillarSpeed = 3
+                    this.pillarSpeed = 2
                     this.pillarFrequency = 3000
                     this.pillarGapHeight = 120
                     let _Interval = setInterval(() => {
