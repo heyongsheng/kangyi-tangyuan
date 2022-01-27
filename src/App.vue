@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-28 02:12:27
+ * @LastEditTime: 2022-01-28 02:57:44
  * @Descripttion: 
 -->
 <template>
@@ -106,7 +106,7 @@ export default {
         {
           name: '前往主页',
           clickHandle: () => {
-            window.open('')
+            window.open('https://ihope_top.gitee.io/my-site/')
           },
           show: () => true
         },

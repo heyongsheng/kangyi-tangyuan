@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-28 02:08:23
+ * @LastEditTime: 2022-01-28 02:58:05
  * @Descripttion: 
 -->
 <template>
@@ -593,7 +593,7 @@ export default {
       this.$emit('goHome')
     },
     goIndex () {
-      window.open('/')
+      window.open('https://ihope_top.gitee.io/my-site/')
     }
   },
 }
