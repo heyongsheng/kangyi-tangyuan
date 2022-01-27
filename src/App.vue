@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-28 01:24:50
+ * @LastEditTime: 2022-01-28 02:12:27
  * @Descripttion: 
 -->
 <template>
@@ -102,6 +102,13 @@ export default {
             this.$forceUpdate()
           },
           show: () => this.$audio.status
+        },
+        {
+          name: '前往主页',
+          clickHandle: () => {
+            window.open('')
+          },
+          show: () => true
         },
       ]
     }
