@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 18:41:06
+ * @LastEditTime: 2022-01-28 01:24:50
  * @Descripttion: 
 -->
 <template>
@@ -69,7 +69,10 @@ export default {
         {
           name: '自由模式',
           clickHandle: () => {
-            this.gameBegin()
+            this.gameStatus = 'start'
+            this.$nextTick(() => {
+              this.$refs.game.gameStart('free')
+            })
           },
           show: () => true
         },
@@ -150,6 +153,7 @@ export default {
   font-size: 32px;
   color: #fff;
   text-shadow: 0 0 5px #fff;
+  pointer-events: none;
 }
 .audio-mask-container {
   display: flex;
@@ -163,7 +167,11 @@ export default {
   margin-top: 50px;
   width: 100%;
   display: flex;
+  pointer-events: auto;
   justify-content: space-around;
+}
+.mask-btn {
+  cursor: pointer;
 }
 /* 菜单区 */
 .menu-wrap {
@@ -174,6 +182,7 @@ export default {
   bottom: 0;
   left: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 .game-title {
   position: absolute;
@@ -197,6 +206,7 @@ export default {
   letter-spacing: 5px;
   color: #fff;
   text-shadow: 0 0 5px #fff;
+  pointer-events: auto;
 }
 .menu-item {
   opacity: 0.8;
@@ -233,7 +243,7 @@ export default {
   color: #fff;
   text-shadow: 0 0 5px #fff;
   transition: all 1s;
-  
+  text-align: center;
 }
 
 @media screen and (max-width: 768px) {

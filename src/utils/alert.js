@@ -3,7 +3,7 @@
  * @Date: 2022-01-27 00:00:53
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 15:20:15
+ * @LastEditTime: 2022-01-27 19:40:34
  * @Descripttion: 提示语组件
  */
 class Alert {
@@ -41,6 +41,13 @@ class Alert {
         }, 1000)
       }, time)
     }, 16)
+  }
+  clear () {
+    this.messageList = []
+    let alertDom = document.querySelectorAll('.alert-text')
+    alertDom.forEach(item => {
+      item.remove()
+    })
   }
 }
 

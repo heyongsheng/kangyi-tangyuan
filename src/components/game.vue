@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 18:37:28
+ * @LastEditTime: 2022-01-28 02:08:23
  * @Descripttion: 
 -->
 <template>
@@ -15,11 +15,12 @@
     autofocus
     tabindex="0"
   >
-  <span>{{energy +' '+ pillarCount}}</span>
-    <div class="energy-wrap" ref="energyWrap"></div>
+    <div class="energy-wrap" ref="energyWrap">
+      <div class="energy-value" v-show="stage === 0">{{ energy }}</div>
+    </div>
     <div
       class="energy-fixed energy-item"
-      v-show="energy"
+      v-show="energy && stage !== 0"
       :style="{
         transform: `translate(-50%, 50px) scale(${1 + (energy - 1) / 5})`,
       }"
@@ -35,11 +36,19 @@
     <!-- 游戏失败 -->
     <transition name="fade">
       <div class="fail-wrap" v-show="gameStatus === 'fail'">
+        <p class="result" v-show="stage === 0">您的成绩为{{energy}}</p>
         <img class="fail-img" src="../assets/img/comeon.png">
         <div class="fail-btn-wrap">
           <div class="fail-btn" @click="gameStatus = '', $emit('goHome')">返回菜单</div>
           <div class="fail-btn" @click.stop="stageChange(stage, true)">再来一次</div>
         </div>
+      </div>
+    </transition>
+    <!-- 游戏胜利 -->
+    <transition name="fade">
+      <div class="success-wrap" v-show="showSuccess">
+        <div class="success-btn" @click="backHome">返回菜单</div>
+        <div class="success-btn" @click="goIndex">前往主页</div>
       </div>
     </transition>
   </div>
@@ -55,7 +64,8 @@ export default {
       reunionMusic: require('../assets/audio/reunion.mp3'),
 
       // 游戏状态
-      gameStatus: 'start',
+      gameStatus: 'start', 
+      showSuccess: false,
 
       // 游戏模式
       mode: '', // story 故事模式 free 自由模式
@@ -65,7 +75,7 @@ export default {
       stageOneEnergyCount: 26, // 故事模式下阶段一的能量数
       lifeValue: 0, // 故事模式下阶段二的生命值
       stageTwoEnergyCount: 45, // 故事模式下阶段二的能量数
-      stageThreeEnergyCount: 483, // 故事模式下阶段三的能量数
+      stageThreeEnergyCount: 443, // 故事模式下阶段三的能量数
       stage3Messages: require('../assets/data/stage3.json'),
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
@@ -109,11 +119,9 @@ export default {
       this.$refs.gameWrap.focus()
       this.mode = mode
       if (mode === 'story') {
-        this.stageChange(1)
-        this.movePillar()
+        this.stageChange(1, true)
       } else {
-        this.createPillar()
-        this.movePillar()
+        this.stageChange(0, true)
       }
     },
 
@@ -124,18 +132,36 @@ export default {
      * @return {*}
      */    
     stageChange (stage, isRestart = false) {
+      this.$refs.tangyuan.status = ''
       // 重置状态
       if (isRestart) {
         // 清空所有柱子
         this.$refs.pillarWrap.innerHTML = ''
         // 柱子开始移动
-        console.log(555);
         this.gameStatus = 'start'
         this.movePillar()
         this.$refs.tangyuan.style.left= '50%'
         this.$refs.tangyuan.style.top= '50%'
+        this.$audio.backMusic.loop = false
       }
       this.stage = stage
+      if (stage === 0) {
+        this.lifeValue = 3
+        this.energy = 0
+        this.pillarCount = 0
+        this.$audio.backMusicPlay(this.starMusic)
+        this.$audio.backMusic.loop = true
+        this.pillarSpeed = 2
+        this.pillarFrequency = 4000
+        this.pillarGapHeight = 220
+        let _createPillar = () => {
+          this.createPillar()
+          if (this.pillarCount < this.stageOneEnergyCount) {
+            this.createPillarInterval = requestAnimationFrame(_createPillar)
+          }
+        }
+        _createPillar()
+      }
       if (stage === 1) {
         // 重置状态
         this.lifeValue = 3
@@ -307,10 +333,6 @@ export default {
      * @return {*}
      */
     movePillar () {
-      if (this.gameStatus!=='start') {
-        return
-      }
-      console.log('柱子移动');
       // 获取所有柱子
       let pillarDoms = this.$refs.pillarWrap.children
       let pillarList = Array.from(pillarDoms)
@@ -349,6 +371,8 @@ export default {
       }
       // 判断汤圆是否处于无敌状态
       if (this.$refs.tangyuan.status !== 'invincible') {
+        this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
+        
         // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
         let leftTwo = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
         let nextDomIndex = pillarList.findIndex(item => {
@@ -378,8 +402,9 @@ export default {
             this.gameFail()
           }
         }
+      } else {
+        this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
       }
-      this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
     },
     /**
      * @description: 生成能量
@@ -434,7 +459,6 @@ export default {
      * @return {*}
      */    
     gameFail () {
-      console.log('game fail');
       // 判断是否处于无敌状态
       if (this.$refs.tangyuan.status === 'invincible') {
         return
@@ -449,7 +473,7 @@ export default {
         setTimeout(() => {
           this.$refs.tangyuan.style.opacity = 1
           this.$refs.tangyuan.status = ''
-        }, 2000)
+        }, 4000 / this.pillarSpeed)
         return
       }
       this.$audio.backMusicStop()
@@ -459,6 +483,7 @@ export default {
       cancelAnimationFrame(this.pillarMoveInterVal)
       // 如果处于阶段三失败，则播放赋能效果
       if (this.stage === 3) {
+        this.gameStatus = 'movie'
         // 询问是否坚持
         setTimeout(() => {
           if (confirm('还要继续坚持吗？')) {
@@ -467,8 +492,11 @@ export default {
             this.$audio.backMusic.currentTime = 174
             // 汤圆移动到屏幕中央
             cancelAnimationFrame(this.tangyuanDownInterval)
-            this.$refs.tangyuan.style.left = '50%'
-            this.$refs.tangyuan.style.top = '50%'
+            this.$refs.tangyuan.classList.add('transition')
+            setTimeout(() => {
+              this.$refs.tangyuan.style.left = '50%'
+              this.$refs.tangyuan.style.top = '50%'
+            }, 500);
             this.$alert.showText('加油！')
 
             // 能量赋值
@@ -492,15 +520,18 @@ export default {
                     this.pillarGapHeight = 120
                     setTimeout(() => {
                       this.stage3Messages.map((item, key) => {
-                    console.log(key, this.stage3Messages.length);
                         if (key <  this.stage3Messages.length - 1) {
                           let time = 2000 - (key * 100)
-                          if (time < 800) time = 800
+                          if (time < 600) time = 600
                           this.$alert.showText(item, time)
                         } else {
                           this.$alert.showText(item, 5000)
                         }
                       })
+                      this.$alert.showText('借此游戏向每一位抗疫英雄致敬', 2000)
+                      this.$alert.showText('也包括配合抗疫的你', 2000)
+                      this.$alert.showText('感谢诸位的坚持与付出，让我们可以按时回家', 2000)
+                      this.$alert.showText('新年快乐，欢迎回家', 10000)
                     }, 2000)
                     let _Interval = setInterval(() => {
                       this.pillarSpeed++
@@ -514,6 +545,11 @@ export default {
                       this.createPillar()
                       if (this.pillarCount < this.stageThreeEnergyCount) {
                         this.createPillarInterval = requestAnimationFrame(_createPillar)
+                      } else {
+                        setTimeout(() => {
+                          this.showSuccess = true
+                          cancelAnimationFrame(this.pillarMoveInterVal)
+                        }, 3000)
                       }
                     }
                     _createPillar()
@@ -545,7 +581,20 @@ export default {
     //   this.$audio.backMusicStop()
     //   alert('游戏结束')
     // }
-
+    /**
+     * @description: 返回首页
+     * @param {*}
+     * @return {*}
+     */
+    backHome () {
+      this.$alert.clear()
+      this.showSuccess = false
+      this.$refs.tangyuan.classList.remove('transition')
+      this.$emit('goHome')
+    },
+    goIndex () {
+      window.open('/')
+    }
   },
 }
 </script>
@@ -556,6 +605,23 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
+}
+/* 自由模式下能量值 */
+.energy-value {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  background: #fff;
+  color: #4ace14;
+  text-align: center;
+  line-height: 50px;
+  border-radius: 50%;
+  border: 3px solid #4ace14;
+  transform: translate(-50%, 50%);
+  z-index: 10;
 }
 /* 汤圆 */
 .tangyuan {
@@ -568,6 +634,10 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 13;
+}
+.tangyuan.transition {
+  box-shadow: 0 0 50px 20px #fff6cc;
+  transition: all 2s;
 }
 /* 柱子 */
 .pillar-wrap {
@@ -645,12 +715,19 @@ export default {
   background: #5a6165;
   z-index: 20;
 }
+.result {
+  font-size: 48px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+  margin-top: -40px;
+  margin-bottom: 5vh;
+}
 .fail-img {
   width: 30%;
   max-width: 357px;
 }
 .fail-btn-wrap {
-  margin-top: 10vh;
+  margin-top: 5vh;
   width: 30%;
   max-width: 357px;
   font-size: 26px;
@@ -666,5 +743,22 @@ export default {
 }
 .fail-btn:hover {
   opacity: 1;
+}
+
+/* 故事模式通关 */
+.success-wrap {
+  position: absolute;
+  bottom: 10vh;
+  left: 50%;
+  width: 300px;
+  display: flex;
+  justify-content: space-between;
+  transform: translate(-50%, 0);
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+}
+.success-btn {
+  cursor: pointer;
 }
 </style>
