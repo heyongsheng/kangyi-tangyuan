@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 02:04:34
+ * @LastEditTime: 2022-01-27 18:37:28
  * @Descripttion: 
 -->
 <template>
@@ -15,7 +15,7 @@
     autofocus
     tabindex="0"
   >
-  <span>{{energy}}</span>
+  <span>{{energy +' '+ pillarCount}}</span>
     <div class="energy-wrap" ref="energyWrap"></div>
     <div
       class="energy-fixed energy-item"
@@ -59,13 +59,13 @@ export default {
 
       // 游戏模式
       mode: '', // story 故事模式 free 自由模式
-
+      // 30 468
       // 故事模式特有属性
       stage: 0, // 阶段
       stageOneEnergyCount: 26, // 故事模式下阶段一的能量数
       lifeValue: 0, // 故事模式下阶段二的生命值
-      stageTwoEnergyCount: 30, // 故事模式下阶段二的能量数
-      stageThreeEnergyCount: 1000, // 故事模式下阶段二的能量数
+      stageTwoEnergyCount: 45, // 故事模式下阶段二的能量数
+      stageThreeEnergyCount: 483, // 故事模式下阶段三的能量数
       stage3Messages: require('../assets/data/stage3.json'),
 
       screenWidth: document.documentElement.clientWidth, // 屏幕宽度
@@ -109,7 +109,7 @@ export default {
       this.$refs.gameWrap.focus()
       this.mode = mode
       if (mode === 'story') {
-        this.stageChange(2, true)
+        this.stageChange(1)
         this.movePillar()
       } else {
         this.createPillar()
@@ -129,8 +129,9 @@ export default {
         // 清空所有柱子
         this.$refs.pillarWrap.innerHTML = ''
         // 柱子开始移动
-        this.movePillar()
+        console.log(555);
         this.gameStatus = 'start'
+        this.movePillar()
         this.$refs.tangyuan.style.left= '50%'
         this.$refs.tangyuan.style.top= '50%'
       }
@@ -141,9 +142,6 @@ export default {
         this.energy = 0
         this.pillarCount = 0
         this.$audio.backMusicPlay(this.reunionMusic)
-        // 
-        // this.$audio.backMusic.playbackRate = 2
-        // 
         this.pillarSpeed = 2
         this.pillarFrequency = 4000
         this.pillarGapHeight = 220
@@ -178,10 +176,8 @@ export default {
       if (stage === 3) {
         this.$alert.showText('进入第三阶段')
         // 阶段3不必暂停音乐，因为不会从阶段3开始
-        // this.lifeValue = 3
         this.energy = this.stageTwoEnergyCount
         this.pillarCount = this.stageTwoEnergyCount
-        // this.$audio.backMusicPlay(this.reunionMusic)
         this.pillarSpeed = 4
         this.pillarFrequency = 2000
         this.pillarGapHeight = 120
@@ -195,6 +191,10 @@ export default {
         }
         _createPillar()
       }
+      // 阶段4，故事模式结束
+      // if (stage === 4) {
+        
+      // }
     },
     /**
      * @description: 汤圆上抛触发器
@@ -231,11 +231,15 @@ export default {
       let v0 = this.tangyuanUpV
       let g = this.tangyuanG
       let y = v0 - g * t
-      this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop - y + 'px'
+      console.log(y);
       if (y < 0) {
         this.tangyuanStartDown()
       } else {
+        this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop - y + 'px'
         this.tangyuanUpInterval = requestAnimationFrame(this.tangyuanUping)
+        if (this.$refs.tangyuan.offsetTop <= -this.$refs.tangyuan.offsetHeight ) {
+          this.gameFail()
+        }
       }
     },
     // 汤圆开始下落
@@ -255,6 +259,9 @@ export default {
       let y = g * t
       this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y + 'px';
       this.tangyuanDownInterval = requestAnimationFrame(this.tangyuanDown)
+      if (this.$refs.tangyuan.offsetTop >= this.screenHeight + this.$refs.tangyuan.offsetHeight/2) {
+        this.gameFail()
+      }
     },
     /**
      * @description: 开始生成柱子
@@ -300,6 +307,10 @@ export default {
      * @return {*}
      */
     movePillar () {
+      if (this.gameStatus!=='start') {
+        return
+      }
+      console.log('柱子移动');
       // 获取所有柱子
       let pillarDoms = this.$refs.pillarWrap.children
       let pillarList = Array.from(pillarDoms)
@@ -357,7 +368,6 @@ export default {
           let pillarTopCenterY = pillarTop.offsetHeight / 2
           if (this.computeCollision(this.pillarWidth, pillarTop.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarTopCenterX, tangyuanCenterY - pillarTopCenterY)) {
             this.gameFail()
-            return
           }
           // 检测汤圆与下方柱子是否碰撞
           // 获取下方柱子中心的坐标
@@ -366,7 +376,6 @@ export default {
 
           if (this.computeCollision(this.pillarWidth, pillarBottom.offsetHeight, tangyuanRadius, tangyuanCenterX - pillarBottomCenterX, tangyuanCenterY - pillarBottomCenterY)) {
             this.gameFail()
-            return
           }
         }
       }
@@ -379,6 +388,7 @@ export default {
      * @return {*}
      */
     createEnergy (x, y) {
+      console.log('生成能量');
       let energyItem = document.createElement('div')
       energyItem.className = 'energy-item'
       energyItem.style.left = x + 'px'
@@ -424,6 +434,7 @@ export default {
      * @return {*}
      */    
     gameFail () {
+      console.log('game fail');
       // 判断是否处于无敌状态
       if (this.$refs.tangyuan.status === 'invincible') {
         return
@@ -434,7 +445,7 @@ export default {
         this.$refs.tangyuan.style.opacity = .5
         this.$refs.tangyuan.status = 'invincible'
         this.lifeValue--
-        this.movePillar()
+        // this.movePillar()
         setTimeout(() => {
           this.$refs.tangyuan.style.opacity = 1
           this.$refs.tangyuan.status = ''
@@ -479,9 +490,18 @@ export default {
                     this.pillarSpeed = 2
                     this.pillarFrequency = 3000
                     this.pillarGapHeight = 120
-                    this.stage3Messages.map((item) => {
-                      this.$alert.showText(item, 1000)
-                    })
+                    setTimeout(() => {
+                      this.stage3Messages.map((item, key) => {
+                    console.log(key, this.stage3Messages.length);
+                        if (key <  this.stage3Messages.length - 1) {
+                          let time = 2000 - (key * 100)
+                          if (time < 800) time = 800
+                          this.$alert.showText(item, time)
+                        } else {
+                          this.$alert.showText(item, 5000)
+                        }
+                      })
+                    }, 2000)
                     let _Interval = setInterval(() => {
                       this.pillarSpeed++
                       this.pillarFrequency-=160
@@ -503,16 +523,6 @@ export default {
               }, 500 * (wait / this.stageTwoEnergyCount))
             }
             _createEnergy(this.energy)
-
-            // let energyDoms = this.$refs.energyWrap.children
-            // let energyList = Array.from(energyDoms)
-            // energyList.map((item, key) => {
-            //   setTimeout(() => {
-            //     console.log(item);
-            //     item.style.left = 50 + '%'
-            //     item.style.top = 50 + '%'
-            //   }, 1000 + key * 200)
-            // })
           }
         }, 2000)
         

@@ -3,7 +3,7 @@
  * @Date: 2022-01-23 17:23:34
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 00:07:34
+ * @LastEditTime: 2022-01-27 18:40:42
  * @Descripttion: 
  */
 class AudioObj {

@@ -3,7 +3,7 @@
  * @Date: 2022-01-27 00:00:53
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 01:01:31
+ * @LastEditTime: 2022-01-27 15:20:15
  * @Descripttion: 提示语组件
  */
 class Alert {
@@ -11,18 +11,13 @@ class Alert {
     this.messageList = []
   }
   showText (text, time = 2000) {
-    if (this.messageList.length > 0) {
-      this.messageList.push({
-        text,
-        time
-      })
-      return
-    }
-    this.showTextHandle(text, time)
     this.messageList.push({
       text,
       time
     })
+    if (this.messageList.length <= 1) {
+      this.showTextHandle(text, time)
+    }
   }
   showTextHandle (text, time) {
     let dom = document.createElement('p')
