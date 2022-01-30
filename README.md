@@ -2,7 +2,7 @@
 
 ![image.png](/public/img/gz.jpg)
 
-游戏地址  https://ihope_top.gitee.io/tangyuan-kangyi/
+游戏地址  https://ihope_top.gitee.io/tangyuan-kangyi/ <br>
 个人主页  https://ihope_top.gitee.io/my-site/
 
 建议在pc上使用Chrome浏览器进行访问，如果只能手机玩，建议使用QQ浏览器（微信浏览器有bug）
