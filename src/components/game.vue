@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-30 18:10:18
+ * @LastEditTime: 2022-01-31 02:36:47
  * @Descripttion: 
 -->
 <template>
@@ -583,6 +583,9 @@ export default {
               }, 500 * (wait / this.stageTwoEnergyCount))
             }
             _createEnergy(this.energy)
+          } else {
+            // 刷新页面
+            window.location.reload()
           }
         }, 2000)
 

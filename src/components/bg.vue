@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 21:01:42
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-23 15:59:10
+ * @LastEditTime: 2022-01-31 02:19:07
  * @Descripttion: 
 -->
 <template>
@@ -31,7 +31,7 @@ export default {
       createSnowInterval: null, // 创建雪花定时器
       snowSpeed: 3, // 雪花下落的速度
       lastSnowTime: '', // 最后一片雪花生成时间
-      snowFrequencyRatio: 300, // 雪花频率系数，越大雪花越少
+      snowFrequencyRatio: 30, // 雪花频率系数，越大雪花越少
       snowFrequency: 0, // 雪花生成的频率（屏幕越大，雪花越多）
       snowAngle: 30,// 雪花偏移角度（小角度可以模拟出角色再前进的感觉，大角度可以模拟风力强大）
     }
