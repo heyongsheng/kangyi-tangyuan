@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-28 02:58:05
+ * @LastEditTime: 2022-01-30 14:22:31
  * @Descripttion: 
 -->
 <template>
@@ -31,16 +31,24 @@
     <div class="tangyuan" ref="tangyuan"></div>
     <!-- 血量 -->
     <div class="blood-wrap" ref="bloodWrap">
-      <div class="blood-item" v-for="(item, index) in lifeValue" :key="index"></div>
+      <div
+        class="blood-item"
+        v-for="(item, index) in lifeValue"
+        :key="index"
+      ></div>
     </div>
     <!-- 游戏失败 -->
     <transition name="fade">
       <div class="fail-wrap" v-show="gameStatus === 'fail'">
-        <p class="result" v-show="stage === 0">您的成绩为{{energy}}</p>
-        <img class="fail-img" src="../assets/img/comeon.png">
+        <p class="result" v-show="stage === 0">您的成绩为{{ energy }}</p>
+        <img class="fail-img" src="../assets/img/comeon.png" />
         <div class="fail-btn-wrap">
-          <div class="fail-btn" @click="gameStatus = '', $emit('goHome')">返回菜单</div>
-          <div class="fail-btn" @click.stop="stageChange(stage, true)">再来一次</div>
+          <div class="fail-btn" @click=";(gameStatus = ''), $emit('goHome')">
+            返回菜单
+          </div>
+          <div class="fail-btn" @click.stop="stageChange(stage, true)">
+            再来一次
+          </div>
         </div>
       </div>
     </transition>
@@ -64,7 +72,7 @@ export default {
       reunionMusic: require('../assets/audio/reunion.mp3'),
 
       // 游戏状态
-      gameStatus: 'start', 
+      gameStatus: 'start',
       showSuccess: false,
 
       // 游戏模式
@@ -101,6 +109,8 @@ export default {
 
       // 能量
       energy: 0, // 当前能量
+
+      gameStartFun: null, // 游戏开始的回调函数
     }
   },
   mounted () {
@@ -112,9 +122,8 @@ export default {
      * @description: 开始游戏
      * @param {*}
      * @return {*}
-     */  
+     */
     gameStart (mode) {
-      this.$alert.showText('轻点屏幕或按空格键开始游戏')
       this.gameStatus = 'start'
       this.$refs.gameWrap.focus()
       this.mode = mode
@@ -130,7 +139,7 @@ export default {
      * @param {*} stage
      * @param {*} isRestart 是否重新开始
      * @return {*}
-     */    
+     */
     stageChange (stage, isRestart = false) {
       this.$refs.tangyuan.status = ''
       // 重置状态
@@ -140,11 +149,12 @@ export default {
         // 柱子开始移动
         this.gameStatus = 'start'
         this.movePillar()
-        this.$refs.tangyuan.style.left= '50%'
-        this.$refs.tangyuan.style.top= '50%'
-        this.$audio.backMusic.loop = false
+        this.$refs.tangyuan.style.left = '50%'
+        this.$refs.tangyuan.style.top = '50%'
+        this.$alert.showText('轻点屏幕或按空格键开始游戏')
       }
       this.stage = stage
+      this.$audio.backMusic.loop = false
       if (stage === 0) {
         this.lifeValue = 3
         this.energy = 0
@@ -160,45 +170,53 @@ export default {
             this.createPillarInterval = requestAnimationFrame(_createPillar)
           }
         }
-        _createPillar()
+        this.gameStartFun = _createPillar
       }
       if (stage === 1) {
         // 重置状态
         this.lifeValue = 3
         this.energy = 0
         this.pillarCount = 0
-        this.$audio.backMusicPlay(this.reunionMusic)
         this.pillarSpeed = 2
         this.pillarFrequency = 4000
         this.pillarGapHeight = 220
-        let _createPillar = () => {
-          this.createPillar()
-          if (this.pillarCount < this.stageOneEnergyCount) {
-            this.createPillarInterval = requestAnimationFrame(_createPillar)
+        let _startFun = () => {
+          this.$audio.backMusicPlay(this.reunionMusic)
+          let _createPillar = () => {
+            this.createPillar()
+            if (this.pillarCount < this.stageOneEnergyCount) {
+              this.createPillarInterval = requestAnimationFrame(_createPillar)
+            }
           }
+          _createPillar()
         }
-        _createPillar()
+        this.gameStartFun = _startFun
       }
       if (stage === 2) {
         this.$alert.showText('进入第二阶段')
         this.lifeValue = 3
         this.energy = this.stageOneEnergyCount
         this.pillarCount = this.stageOneEnergyCount
-        this.$audio.backMusicPlay(this.reunionMusic)
-        this.$audio.backMusic.currentTime = 114
         this.pillarSpeed = 3
         this.pillarFrequency = 3000
         this.pillarGapHeight = 200
 
-        let _createPillar = () => {
-          this.createPillar()
-          if (this.pillarCount < this.stageTwoEnergyCount) {
-            this.createPillarInterval = requestAnimationFrame(_createPillar)
+        let _startFun = () => {
+          this.$audio.backMusicPlay(this.reunionMusic)
+          this.$audio.backMusic.currentTime = 114
+          let _createPillar = () => {
+            this.createPillar()
+            if (this.pillarCount < this.stageTwoEnergyCount) {
+              this.createPillarInterval = requestAnimationFrame(_createPillar)
+            }
           }
+          _createPillar()
         }
-        _createPillar()
+
+
+        this.gameStartFun = _startFun
       }
-      
+
       if (stage === 3) {
         this.$alert.showText('进入第三阶段')
         // 阶段3不必暂停音乐，因为不会从阶段3开始
@@ -219,7 +237,7 @@ export default {
       }
       // 阶段4，故事模式结束
       // if (stage === 4) {
-        
+
       // }
     },
     /**
@@ -228,6 +246,10 @@ export default {
      * @return {*}
      */
     tangyuanUpEmit () {
+      if (this.gameStartFun) {
+        this.gameStartFun()
+        this.gameStartFun = null
+      }
       if (this.gameStatus === 'start') {
         this.tangyuanStartUp()
       }
@@ -263,7 +285,7 @@ export default {
       } else {
         this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop - y + 'px'
         this.tangyuanUpInterval = requestAnimationFrame(this.tangyuanUping)
-        if (this.$refs.tangyuan.offsetTop <= -this.$refs.tangyuan.offsetHeight ) {
+        if (this.$refs.tangyuan.offsetTop <= -this.$refs.tangyuan.offsetHeight) {
           this.gameFail()
         }
       }
@@ -285,7 +307,7 @@ export default {
       let y = g * t
       this.$refs.tangyuan.style.top = this.$refs.tangyuan.offsetTop + y + 'px';
       this.tangyuanDownInterval = requestAnimationFrame(this.tangyuanDown)
-      if (this.$refs.tangyuan.offsetTop >= this.screenHeight + this.$refs.tangyuan.offsetHeight/2) {
+      if (this.$refs.tangyuan.offsetTop >= this.screenHeight + this.$refs.tangyuan.offsetHeight / 2) {
         this.gameFail()
       }
     },
@@ -372,7 +394,7 @@ export default {
       // 判断汤圆是否处于无敌状态
       if (this.$refs.tangyuan.status !== 'invincible') {
         this.pillarMoveInterVal = requestAnimationFrame(this.movePillar)
-        
+
         // 获取当前与汤圆最近右侧的柱子，作为碰撞检测的对象
         let leftTwo = this.$refs.tangyuan.offsetLeft - this.pillarWidth - this.$refs.tangyuan.offsetWidth / 2
         let nextDomIndex = pillarList.findIndex(item => {
@@ -424,13 +446,13 @@ export default {
         setTimeout(() => {
           this.energy++
           this.$refs.energyWrap.removeChild(energyItem)
-          if(this.energy === this.stageOneEnergyCount && this.mode === 'story') {
+          if (this.energy === this.stageOneEnergyCount && this.mode === 'story') {
             this.$audio.backMusicStop()
             setTimeout(() => {
               this.stageChange(2)
             }, 2000)
           }
-          if(this.energy === this.stageTwoEnergyCount && this.mode === 'story') {
+          if (this.energy === this.stageTwoEnergyCount && this.mode === 'story') {
             this.stageChange(3)
           }
         }, 1000)
@@ -457,7 +479,7 @@ export default {
      * @description: 失败
      * @param {*}
      * @return {*}
-     */    
+     */
     gameFail () {
       // 判断是否处于无敌状态
       if (this.$refs.tangyuan.status === 'invincible') {
@@ -509,6 +531,9 @@ export default {
                 setTimeout(() => {
                   energyItem.style.left = 50 + '%'
                   energyItem.style.top = 50 + '%'
+                  setTimeout(() => {
+                    energyItem.remove()
+                  }, 1000)
                   this.energy--
                   if (this.energy > 0) {
                     _createEnergy(this.energy)
@@ -520,7 +545,7 @@ export default {
                     this.pillarGapHeight = 120
                     setTimeout(() => {
                       this.stage3Messages.map((item, key) => {
-                        if (key <  this.stage3Messages.length - 1) {
+                        if (key < this.stage3Messages.length - 1) {
                           let time = 2000 - (key * 100)
                           if (time < 600) time = 600
                           this.$alert.showText(item, time)
@@ -535,7 +560,7 @@ export default {
                     }, 2000)
                     let _Interval = setInterval(() => {
                       this.pillarSpeed++
-                      this.pillarFrequency-=160
+                      this.pillarFrequency -= 160
                       if (this.pillarSpeed >= 20) {
                         clearInterval(_Interval)
                       }
@@ -561,8 +586,8 @@ export default {
             _createEnergy(this.energy)
           }
         }, 2000)
-        
-        
+
+
         // 恢复创建柱子和柱子移动
         return
       }
@@ -738,8 +763,8 @@ export default {
 }
 .fail-btn {
   cursor: pointer;
-  opacity: .8;
-  transition: all .3s;
+  opacity: 0.8;
+  transition: all 0.3s;
 }
 .fail-btn:hover {
   opacity: 1;

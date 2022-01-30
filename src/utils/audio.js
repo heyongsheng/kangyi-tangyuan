@@ -3,7 +3,7 @@
  * @Date: 2022-01-23 17:23:34
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-27 18:40:42
+ * @LastEditTime: 2022-01-30 13:58:43
  * @Descripttion: 
  */
 class AudioObj {
@@ -23,6 +23,7 @@ class AudioObj {
     }
   }
   backMusicPlay (src) {
+    clearInterval(this.playInterval)
     if (this.status) {
       if (src) {
         this.backMusic.src = src
@@ -40,6 +41,7 @@ class AudioObj {
     }
   }
   backMusicStop () {
+    clearInterval(this.playInterval)
     this.playInterval = setInterval(() => {
       if (this.backMusic.volume > 0) {
         this.backMusic.volume = (this.backMusic.volume - 0.1).toFixed(1)

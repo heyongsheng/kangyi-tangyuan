@@ -3,7 +3,7 @@
  * @Date: 2022-01-14 23:17:44
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-28 02:57:44
+ * @LastEditTime: 2022-01-30 13:41:50
  * @Descripttion: 
 -->
 <template>
@@ -254,9 +254,11 @@ export default {
 }
 
 @media screen and (max-width: 768px) {
-  /* .game-title {
-    font-size: 24px;
-    letter-spacing: 5px;
-  } */
+  .game-title {
+    font-size: 42px;
+  }
+  .game-title .letter {
+    letter-spacing: 10px;
+  }
 }
 </style>
