@@ -3,7 +3,7 @@
  * @Date: 2022-01-17 22:06:02
  * @email: 1378431028@qq.com
  * @LastEditors: 贺永胜
- * @LastEditTime: 2022-01-30 14:22:31
+ * @LastEditTime: 2022-01-30 18:10:18
  * @Descripttion: 
 -->
 <template>
@@ -194,7 +194,7 @@ export default {
       }
       if (stage === 2) {
         this.$alert.showText('进入第二阶段')
-        this.lifeValue = 3
+        this.lifeValue = 5
         this.energy = this.stageOneEnergyCount
         this.pillarCount = this.stageOneEnergyCount
         this.pillarSpeed = 3
@@ -279,7 +279,6 @@ export default {
       let v0 = this.tangyuanUpV
       let g = this.tangyuanG
       let y = v0 - g * t
-      console.log(y);
       if (y < 0) {
         this.tangyuanStartDown()
       } else {
@@ -630,6 +629,7 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
+  outline: none !important;
 }
 /* 自由模式下能量值 */
 .energy-value {
